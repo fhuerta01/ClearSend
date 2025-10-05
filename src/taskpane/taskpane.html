@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ClearSend</title>
+
+    <!-- Office JavaScript API -->
+    <script type="text/javascript" src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+
+    <!-- Fluent UI -->
+    <link rel="stylesheet" href="https://res-1.cdn.office.net/files/fabric-cdn-prod_20230815.002/office-ui-fabric-core/11.0.0/css/fabric.min.css"/>
+
+    <!-- ClearSend styles -->
+    <link href="clearsend.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body class="ms-Fabric ms-font-m ms-fontColor-neutralPrimary">
+
+    <!-- Tab Content Container -->
+    <div class="tab-content-container">
+
+        <!-- Details Tab -->
+        <div class="tab-content active" id="detailsContent">
+
+            <!-- Summary Section -->
+            <section class="summary-section">
+                <div class="summary-header">
+                    <h3 class="summary-title ms-font-l ms-fontWeight-semilight">Total destinations: <span id="totalDestinations">0</span></h3>
+                    <button class="summary-refresh-btn" id="summaryRefreshBtn" title="Refresh recipient analysis">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="14" height="14" fill="currentColor"><path d="M105.1 202.6c7.7-21.8 20.2-42.3 37.8-59.8c62.5-62.5 163.8-62.5 226.3 0L386.3 160 352 160c-17.7 0-32 14.3-32 32s14.3 32 32 32l111.5 0c0 0 0 0 0 0l.4 0c17.7 0 32-14.3 32-32l0-112c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 35.2L414.4 97.6c-87.5-87.5-229.3-87.5-316.8 0C73.2 122 55.6 150.7 44.8 181.4c-5.9 16.7 2.9 34.9 19.5 40.8s34.9-2.9 40.8-19.5zM39 289.3c-5 1.5-9.8 4.2-13.7 8.2c-4 4-6.7 8.8-8.1 14c-.3 1.2-.6 2.5-.8 3.8c-.3 1.7-.4 3.4-.4 5.1L16 432c0 17.7 14.3 32 32 32s32-14.3 32-32l0-35.1 17.6 17.5c0 0 0 0 0 0c87.5 87.4 229.3 87.4 316.7 0c24.4-24.4 42.1-53.1 52.9-83.8c5.9-16.7-2.9-34.9-19.5-40.8s-34.9 2.9-40.8 19.5c-7.7 21.8-20.2 42.3-37.8 59.8c-62.5 62.5-163.8 62.5-226.3 0l-.1-.1L125.6 352l34.4 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L48.4 288c-1.6 0-3.2 .1-4.8 .3s-3.1 .5-4.6 1z"/></svg>
+                    </button>
+                </div>
+                <div class="summary-stats">
+                    <div class="stat-item">
+                        <div class="stat-number" id="duplicatedCount">0</div>
+                        <div class="stat-label">Duplicated</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="externalCount">0</div>
+                        <div class="stat-label">External</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="invalidCount">0</div>
+                        <div class="stat-label">Invalid</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Processing Options Section -->
+            <section class="processing-options-section">
+                <div class="processing-options-header">
+                    <h3 class="processing-options-title ms-font-l ms-fontWeight-semilight">Processing options</h3>
+                    <button class="processing-options-btn" id="processingOptionsBtn" title="Open configuration" onclick="switchToConfigTab()">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="14" height="14" fill="currentColor"><path d="M0 416c0 17.7 14.3 32 32 32l54.7 0c12.3 28.3 40.5 48 73.3 48s61-19.7 73.3-48L480 448c17.7 0 32-14.3 32-32s-14.3-32-32-32l-246.7 0c-12.3-28.3-40.5-48-73.3-48s-61 19.7-73.3 48L32 384c-17.7 0-32 14.3-32 32zm128 0a32 32 0 1 1 64 0 32 32 0 1 1 -64 0zM320 256a32 32 0 1 1 64 0 32 32 0 1 1 -64 0zm32-80c-32.8 0-61 19.7-73.3 48L32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l246.7 0c12.3 28.3 40.5 48 73.3 48s61-19.7 73.3-48l54.7 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-54.7 0c-12.3-28.3-40.5-48-73.3-48zM192 128a32 32 0 1 1 0-64 32 32 0 1 1 0 64zm73.3-64C253 35.7 224.8 16 192 16s-61 19.7-73.3 48L32 64C14.3 64 0 78.3 0 96s14.3 32 32 32l86.7 0c12.3 28.3 40.5 48 73.3 48s61-19.7 73.3-48L480 128c17.7 0 32-14.3 32-32s-14.3-32-32-32L265.3 64z"/></svg>
+                    </button>
+                </div>
+                <div class="processing-options-summary" id="processingOptionsSummary">Sort</div>
+            </section>
+
+            <!-- Last Action Section -->
+            <section class="last-action-section">
+                <div class="last-action-header">
+                    <h3 class="last-action-title ms-font-l ms-fontWeight-semilight">Last action</h3>
+                    <button class="last-action-undo-btn" id="undoBtn" title="Undo last action" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="14" height="14" fill="currentColor"><path d="M125.7 160l50.3 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L48 224c-17.7 0-32-14.3-32-32L16 64c0-17.7 14.3-32 32-32s32 14.3 32 32l0 51.2L97.6 97.6c87.5-87.5 229.3-87.5 316.8 0s87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3s-163.8-62.5-226.3 0L125.7 160z"/></svg>
+                    </button>
+                </div>
+                <div class="last-action-text" id="lastActionText">No changes applied</div>
+            </section>
+
+            <!-- Recipient List Section -->
+            <section class="list-section">
+                <div class="list-header">
+                    <h3 class="list-title ms-font-l ms-fontWeight-semilight">Destination fields</h3>
+                    <div class="list-actions">
+                        <button class="list-action-btn" id="downloadBtn" title="Download as CSV" disabled>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="14" height="14" fill="currentColor"><path d="M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 242.7-73.4-73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l128 128c12.5 12.5 32.8 12.5 45.3 0l128-128c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L288 274.7 288 32zM64 352c-35.3 0-64 28.7-64 64l0 32c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-32c0-35.3-28.7-64-64-64l-101.5 0-45.3 45.3c-25 25-65.5 25-90.5 0L165.5 352 64 352zm368 56a24 24 0 1 1 0 48 24 24 0 1 1 0-48z"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- To Field -->
+                <div class="field-row">
+                    <span class="field-label">To: <span class="field-count" id="toCount">(0)</span></span>
+                    <button class="field-toggle-btn" id="toggleToBtn" title="Toggle To list" onclick="toggleField('to')">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" width="14" height="14" fill="currentColor"><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM144 256a144 144 0 1 1 288 0 144 144 0 1 1 -288 0zm144-64c0 35.3-28.7 64-64 64c-7.1 0-13.9-1.2-20.3-3.3c-5.5-1.8-11.9 1.6-11.7 7.4c.3 6.9 1.3 13.8 3.2 20.7c13.7 51.2 66.4 81.6 117.6 67.9s81.6-66.4 67.9-117.6c-11.1-41.5-47.8-69.4-88.6-71.1c-5.8-.2-9.2 6.1-7.4 11.7c2.1 6.4 3.3 13.2 3.3 20.3z"/></svg>
+                    </button>
+                </div>
+                <div id="toContent" style="display: none;">
+                    Hello!
+                </div>
+
+                <!-- CC Field -->
+                <div class="field-row">
+                    <span class="field-label">CC: <span class="field-count" id="ccCount">(0)</span></span>
+                    <button class="field-toggle-btn" id="toggleCcBtn" title="Toggle CC list" onclick="toggleField('cc')">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" width="14" height="14" fill="currentColor"><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM144 256a144 144 0 1 1 288 0 144 144 0 1 1 -288 0zm144-64c0 35.3-28.7 64-64 64c-7.1 0-13.9-1.2-20.3-3.3c-5.5-1.8-11.9 1.6-11.7 7.4c.3 6.9 1.3 13.8 3.2 20.7c13.7 51.2 66.4 81.6 117.6 67.9s81.6-66.4 67.9-117.6c-11.1-41.5-47.8-69.4-88.6-71.1c-5.8-.2-9.2 6.1-7.4 11.7c2.1 6.4 3.3 13.2 3.3 20.3z"/></svg>
+                    </button>
+                </div>
+                <div id="ccContent" style="display: none;"></div>
+
+                <!-- BCC Field -->
+                <div class="field-row">
+                    <span class="field-label">BCC: <span class="field-count" id="bccCount">(0)</span></span>
+                    <button class="field-toggle-btn" id="toggleBccBtn" title="Toggle BCC list" onclick="toggleField('bcc')">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" width="14" height="14" fill="currentColor"><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM144 256a144 144 0 1 1 288 0 144 144 0 1 1 -288 0zm144-64c0 35.3-28.7 64-64 64c-7.1 0-13.9-1.2-20.3-3.3c-5.5-1.8-11.9 1.6-11.7 7.4c.3 6.9 1.3 13.8 3.2 20.7c13.7 51.2 66.4 81.6 117.6 67.9s81.6-66.4 67.9-117.6c-11.1-41.5-47.8-69.4-88.6-71.1c-5.8-.2-9.2 6.1-7.4 11.7c2.1 6.4 3.3 13.2 3.3 20.3z"/></svg>
+                    </button>
+                </div>
+                <div id="bccContent" style="display: none;"></div>
+            </section>
+
+            <!-- Progress Bar -->
+            <div class="progress-container" id="progressContainer" style="display: none;">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text" id="progressText">Processing...</div>
+            </div>
+
+        </div>
+
+        <!-- Configuration Tab -->
+        <div class="tab-content" id="configContent">
+
+            <!-- Enabled Features Section -->
+            <section class="config-section">
+                <div class="config-section-header">
+                    <h3 class="config-section-title ms-font-l ms-fontWeight-semilight">Enabled options</h3>
+                </div>
+                <div class="feature-grid">
+                    <label class="feature-item">
+                        <input type="checkbox" id="sortCheck" checked />
+                        <div class="feature-text">
+                            <span class="feature-name">Sort recipients</span>
+                            <span class="feature-desc">Alphabetical ordering</span>
+                        </div>
+                    </label>
+
+                    <label class="feature-item">
+                        <input type="checkbox" id="dedupeCheck" checked />
+                        <div class="feature-text">
+                            <span class="feature-name">Remove duplicates</span>
+                            <span class="feature-desc">Cross-field deduplication</span>
+                        </div>
+                    </label>
+
+                    <label class="feature-item">
+                        <input type="checkbox" id="validateCheck" checked />
+                        <div class="feature-text">
+                            <span class="feature-name">Validate emails</span>
+                            <span class="feature-desc">Format & domain checks</span>
+                        </div>
+                    </label>
+
+                    <label class="feature-item">
+                        <input type="checkbox" id="prioritizeInternalCheck" checked />
+                        <div class="feature-text">
+                            <span class="feature-name">Prioritize internal</span>
+                            <span class="feature-desc">Place internal domains first</span>
+                        </div>
+                    </label>
+
+                    <label class="feature-item">
+                        <input type="checkbox" id="removeExternalCheck" />
+                        <div class="feature-text">
+                            <span class="feature-name">Remove external</span>
+                            <span class="feature-desc">Delete external recipients</span>
+                        </div>
+                    </label>
+                </div>
+            </section>
+
+            <!-- Internal Domains Section -->
+            <section class="config-section">
+                <div class="config-section-header">
+                    <h3 class="config-section-title ms-font-l ms-fontWeight-semilight">Internal domains</h3>
+                </div>
+                <div class="domains-list" id="domainsList">
+                    <!-- Domains will be added here dynamically -->
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <!-- Details Footer (only visible in Details section) -->
+    <footer class="footer" id="detailsFooter">
+        <button class="footer-action-btn" id="checkCleanBtn" title="Execute all enabled features">
+            Process destination fields
+        </button>
+    </footer>
+
+    <!-- Config Footer (only visible in Configuration section) -->
+    <footer class="footer" id="configFooter" style="display: none;">
+        <button class="footer-action-btn" id="configBackBtn" title="Back to details" onclick="switchToDetailsTab()">
+            Back
+        </button>
+    </footer>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Initializing ClearSend...</div>
+    </div>
+
+    <!-- ClearSend Processing Library -->
+    <script src="processors.js"></script>
+
+    <!-- ClearSend JavaScript -->
+    <script src="taskpane.js"></script>
+</body>
+
+</html>

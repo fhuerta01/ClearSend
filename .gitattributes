@@ -1,0 +1,2 @@
+# Force LF in repositories to avoid platform discrepancies
+* text=auto eol=lf

@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<OfficeApp xmlns="http://schemas.microsoft.com/office/appforoffice/1.1"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
+           xmlns:mailappor="http://schemas.microsoft.com/office/mailappversionoverrides/1.0"
+           xsi:type="MailApp">
+
+  <!-- Unique identifier for this add-in -->
+  <Id>8af20496-0c8d-4599-9fa3-3d8f68f723a8</Id>
+
+  <!-- Version number in the format major.minor.build.revision -->
+  <Version>1.0.0.0</Version>
+
+  <!-- Provider/Publisher name -->
+  <ProviderName>ClearSend</ProviderName>
+
+  <!-- Default locale for the add-in -->
+  <DefaultLocale>en-US</DefaultLocale>
+
+  <!-- Display name shown in Office UI -->
+  <DisplayName DefaultValue="ClearSend"/>
+
+  <!-- Description shown in Office Store and add-in dialog -->
+  <Description DefaultValue="Automatically clean, validate, deduplicate, and organize your email recipients. Sort alphabetically, prioritize internal contacts, remove invalid addresses, and prevent accidental external emails."/>
+
+  <!-- Icons for the add-in (production Vercel deployment) -->
+  <IconUrl DefaultValue="https://clearsend.vercel.app/assets/icon-64.png"/>
+  <HighResolutionIconUrl DefaultValue="https://clearsend.vercel.app/assets/icon-128.png"/>
+
+  <!-- Support URL for help and documentation -->
+  <SupportUrl DefaultValue="https://github.com/clearsend/support"/>
+
+  <!-- Domains that the add-in will navigate to -->
+  <AppDomains>
+    <AppDomain>https://clearsend.vercel.app</AppDomain>
+  </AppDomains>
+
+  <!-- Specify this is a Mail add-in -->
+  <Hosts>
+    <Host Name="Mailbox"/>
+  </Hosts>
+
+  <!-- Minimum API requirements -->
+  <Requirements>
+    <Sets>
+      <Set Name="Mailbox" MinVersion="1.1"/>
+    </Sets>
+  </Requirements>
+
+  <!-- Form settings for different contexts -->
+  <FormSettings>
+    <Form xsi:type="ItemRead">
+      <DesktopSettings>
+        <SourceLocation DefaultValue="https://clearsend.vercel.app/taskpane.html"/>
+        <RequestedHeight>250</RequestedHeight>
+      </DesktopSettings>
+    </Form>
+  </FormSettings>
+
+  <!-- Permissions: ReadWriteItem allows reading and modifying email recipients -->
+  <Permissions>ReadWriteItem</Permissions>
+
+  <!-- Activation rules: Show in both read and compose modes -->
+  <Rule xsi:type="RuleCollection" Mode="Or">
+    <Rule xsi:type="ItemIs" ItemType="Message" FormType="Read"/>
+    <Rule xsi:type="ItemIs" ItemType="Message" FormType="Edit"/>
+  </Rule>
+
+  <!-- Don't highlight entities in email body -->
+  <DisableEntityHighlighting>false</DisableEntityHighlighting>
+
+  <!-- Version Overrides for Ribbon UI integration -->
+  <VersionOverrides xmlns="http://schemas.microsoft.com/office/mailappversionoverrides" xsi:type="VersionOverridesV1_0">
+    <Requirements>
+      <bt:Sets DefaultMinVersion="1.3">
+        <bt:Set Name="Mailbox"/>
+      </bt:Sets>
+    </Requirements>
+
+    <Hosts>
+      <Host xsi:type="MailHost">
+        <DesktopFormFactor>
+          <!-- Commands.html contains the function file for ribbon buttons -->
+          <FunctionFile resid="Commands.Url"/>
+
+          <!-- Extension point for reading messages -->
+          <ExtensionPoint xsi:type="MessageReadCommandSurface">
+            <OfficeTab id="TabDefault">
+              <Group id="msgReadGroup">
+                <Label resid="GroupLabel"/>
+
+                <!-- Button to open task pane when reading messages -->
+                <Control xsi:type="Button" id="msgReadOpenPaneButton">
+                  <Label resid="TaskpaneButton.Label"/>
+                  <Supertip>
+                    <Title resid="TaskpaneButton.Label"/>
+                    <Description resid="TaskpaneButton.Tooltip"/>
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="Icon.16x16"/>
+                    <bt:Image size="32" resid="Icon.32x32"/>
+                    <bt:Image size="80" resid="Icon.80x80"/>
+                  </Icon>
+                  <Action xsi:type="ShowTaskpane">
+                    <SourceLocation resid="Taskpane.Url"/>
+                  </Action>
+                </Control>
+              </Group>
+            </OfficeTab>
+          </ExtensionPoint>
+
+          <!-- Extension point for composing messages -->
+          <ExtensionPoint xsi:type="MessageComposeCommandSurface">
+            <OfficeTab id="TabDefault">
+              <Group id="msgComposeGroup">
+                <Label resid="GroupLabel"/>
+
+                <!-- Button to open main task pane -->
+                <Control xsi:type="Button" id="msgComposeOpenPaneButton">
+                  <Label resid="CleanSortButton.Label"/>
+                  <Supertip>
+                    <Title resid="CleanSortButton.Label"/>
+                    <Description resid="CleanSortButton.Tooltip"/>
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="Icon.16x16"/>
+                    <bt:Image size="32" resid="Icon.32x32"/>
+                    <bt:Image size="80" resid="Icon.80x80"/>
+                  </Icon>
+                  <Action xsi:type="ShowTaskpane">
+                    <SourceLocation resid="Taskpane.Url"/>
+                  </Action>
+                </Control>
+
+                <!-- Quick clean button (executes function directly) -->
+                <Control xsi:type="Button" id="quickCleanButton">
+                  <Label resid="QuickCleanButton.Label"/>
+                  <Supertip>
+                    <Title resid="QuickCleanButton.Label"/>
+                    <Description resid="QuickCleanButton.Tooltip"/>
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="Icon.16x16"/>
+                    <bt:Image size="32" resid="Icon.32x32"/>
+                    <bt:Image size="80" resid="Icon.80x80"/>
+                  </Icon>
+                  <Action xsi:type="ExecuteFunction">
+                    <FunctionName>quickClean</FunctionName>
+                  </Action>
+                </Control>
+              </Group>
+            </OfficeTab>
+          </ExtensionPoint>
+        </DesktopFormFactor>
+      </Host>
+    </Hosts>
+
+    <!-- Resources: Images, URLs, and Strings -->
+    <Resources>
+      <!-- Icon resources (production Vercel URLs) -->
+      <bt:Images>
+        <bt:Image id="Icon.16x16" DefaultValue="https://clearsend.vercel.app/assets/icon-16.png"/>
+        <bt:Image id="Icon.32x32" DefaultValue="https://clearsend.vercel.app/assets/icon-32.png"/>
+        <bt:Image id="Icon.80x80" DefaultValue="https://clearsend.vercel.app/assets/icon-80.png"/>
+      </bt:Images>
+
+      <!-- URL resources -->
+      <bt:Urls>
+        <bt:Url id="Commands.Url" DefaultValue="https://clearsend.vercel.app/commands.html"/>
+        <bt:Url id="Taskpane.Url" DefaultValue="https://clearsend.vercel.app/taskpane.html"/>
+      </bt:Urls>
+
+      <!-- Short strings (max 125 characters) -->
+      <bt:ShortStrings>
+        <bt:String id="GroupLabel" DefaultValue="ClearSend"/>
+        <bt:String id="TaskpaneButton.Label" DefaultValue="ClearSend panel"/>
+        <bt:String id="CleanSortButton.Label" DefaultValue="ClearSend"/>
+        <bt:String id="QuickCleanButton.Label" DefaultValue="Quick clean"/>
+      </bt:ShortStrings>
+
+      <!-- Long strings (max 250 characters) -->
+      <bt:LongStrings>
+        <bt:String id="TaskpaneButton.Tooltip" DefaultValue="Open ClearSend panel to view and analyze email recipients"/>
+        <bt:String id="CleanSortButton.Tooltip" DefaultValue="Open ClearSend to clean, validate, deduplicate and organize recipients (Ctrl+Alt+C)"/>
+        <bt:String id="QuickCleanButton.Tooltip" DefaultValue="One-click clean: validate emails, remove duplicates, and sort alphabetically (Ctrl+Alt+Q)"/>
+      </bt:LongStrings>
+    </Resources>
+  </VersionOverrides>
+</OfficeApp>
