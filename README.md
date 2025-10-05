@@ -6,6 +6,10 @@
 
 ClearSend is a free, open-source Microsoft Outlook add-in that helps you manage email recipients with powerful automation features. **100% client-side processing** - your email addresses never leave your device. No servers, no cloud, no tracking.
 
+
+<img width="359" height="973" alt="image" src="https://github.com/user-attachments/assets/aa043ae8-3ad1-450f-82e9-c0beda0e0aaf" />
+
+
 ## ✨ Features
 
 - **📋 Sort Recipients** - Alphabetically organize recipients by name or email
