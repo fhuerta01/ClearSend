@@ -10,12 +10,16 @@ ClearSend is a free, open-source Microsoft Outlook add-in that helps you manage 
 
 - **📋 Sort Recipients** - Alphabetically organize recipients by name or email
 - **🔄 Remove Duplicates** - Cross-field deduplication across To, CC, and BCC
-- **✅ Validate Emails** - Format validation with common typo detection
-- **🏢 Prioritize Internal** - Move internal domain recipients to the top
+- **✅ Prevent Invalids Processing** - Stop processing if invalid email addresses are detected
+- **💾 Keep Invalid Addresses** - Save invalid addresses across sessions for tracking
+- **🏢 Prioritize Internal** - Move internal domain recipients to the top of the list
 - **🚫 Remove External** - Filter out external recipients for internal-only emails
 - **⚡ Quick Clean** - One-click recipient cleaning with keyboard shortcut (Ctrl+Alt+Q)
 - **↩️ Undo Support** - Revert to previous recipient lists
-- **💾 Export to CSV** - Download recipient lists for analysis
+- **📊 Recipient Analysis** - Real-time statistics for destinations, duplicates, and invalid addresses
+- **💾 Export to CSV** - Download recipient lists and invalid addresses for analysis
+- **⚙️ Customizable Order** - Drag-and-drop to reorder processing steps
+- **🔧 Restore Defaults** - One-click reset to default settings
 
 ## 🔒 Privacy First - Your Data Stays With You
 
@@ -31,57 +35,69 @@ ClearSend is a free, open-source Microsoft Outlook add-in that helps you manage 
 
 ## 🚀 Getting Started
 
-### For Users
+### Installation Options
 
-#### Installation
+ClearSend offers two installation methods:
 
-1. Download the latest release from the [Releases page](https://github.com/fhuerta01/ClearSend/releases)
+#### Option 1: Quick Install (Recommended) - Using Vercel Deployment
+
+This method uses our hosted version on Vercel. Perfect for most users.
+
+1. Download only the **manifest.prod.xml** file from the [Releases page](https://github.com/fhuerta01/ClearSend/releases)
 2. Open Outlook (Desktop or Web)
 3. Go to **Get Add-ins** → **My Add-ins** → **Add from File**
-4. Select the downloaded `manifest.xml` file
+4. Select the downloaded `manifest.prod.xml` file
 5. Click **Install**
 
-#### Quick Start
+**Benefits:**
+- Smallest download (just the manifest file)
+- Always up-to-date with latest version
+- No local server required
+- Faster installation
 
-1. Compose a new email in Outlook
-2. Click the **ClearSend** button in the ribbon
-3. Configure your preferences in the settings
-4. Click **Process destination fields** to clean your recipients
+#### Option 2: Local Installation - Self-Hosted
 
-### For Developers
+This method runs ClearSend entirely from your local machine. Ideal for offline use or corporate environments.
 
-#### Prerequisites
-
+**Prerequisites:**
 - Node.js 14+ and npm
 - Microsoft Outlook (Desktop or Web)
-- Office Add-ins Developer Certificate (auto-generated)
 
-#### Local Development
+**Steps:**
 
-```bash
-# Clone the repository
-git clone https://github.com/fhuerta01/ClearSend.git
-cd ClearSend
+1. Download the complete source code from the [Releases page](https://github.com/fhuerta01/ClearSend/releases) or clone the repository:
+   ```bash
+   git clone https://github.com/fhuerta01/ClearSend.git
+   cd ClearSend
+   ```
 
-# Install dependencies
-npm install
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-# Start development server
-npm run dev-server
+3. Build the project:
+   ```bash
+   npm run build
+   ```
 
-# In another terminal, sideload the add-in
-npm start
-```
+4. Start the local server:
+   ```bash
+   npm start
+   ```
 
-#### Build for Production
+5. In Outlook:
+   - Go to **Get Add-ins** → **My Add-ins** → **Add from File**
+   - Select the `manifest.xml` file (not manifest.prod.xml)
+   - Click **Install**
 
-```bash
-# Build optimized bundle
-npm run build
 
-# Validate manifest
-npm run validate:prod
-```
+### Quick Start
+
+1. Compose a new email in Outlook
+2. Click the **ClearSend** button in the ribbon (or use Ctrl+Alt+C)
+3. Configure your preferences in the Configuration tab
+4. Click **Process destination fields** to clean your recipients
 
 ## 🏗️ Architecture
 
@@ -91,72 +107,18 @@ All email processing logic runs **entirely in your browser/Outlook client** usin
 
 - **Sort Module** - Alphabetical and domain-based sorting (local only)
 - **Dedupe Module** - Cross-field duplicate detection (local only)
-- **Validation Module** - Email format validation and typo detection (local only)
+- **Validation Module** - Email format validation (local only)
 - **Internal Prioritization** - Internal domain identification (local only)
 - **External Filtering** - External recipient removal (local only)
+- **Invalid Tracking** - Saved invalid addresses storage (local roaming settings only)
 
 **Technical Implementation:**
 - Pure JavaScript functions execute in your browser's memory
 - No network requests to external APIs
 - No data serialization or transmission
 - Email addresses remain in Outlook's context only
+- Settings stored in Office.js roaming settings (synced by Microsoft across your devices)
 
-### Technology Stack
-
-- **Frontend**: Vanilla JavaScript (ES6+)
-- **UI Framework**: Microsoft Fluent UI Core
-- **Office Integration**: Office.js API
-- **Build Tool**: Webpack 5
-- **Deployment**: Vercel (static hosting)
-
-## 📖 User Guide
-
-### Configuration
-
-1. Click the **Settings** icon (⚙️) to configure processing options
-2. Enable/disable features:
-   - Sort recipients alphabetically
-   - Remove duplicates
-   - Validate email addresses
-   - Prioritize internal domains
-   - Remove external recipients
-3. Add your organization's internal domains
-
-### Processing Options
-
-#### Sort Recipients
-Organizes recipients alphabetically by display name or email address.
-
-#### Remove Duplicates
-Eliminates duplicate email addresses across To, CC, and BCC fields. Priority: To > CC > BCC.
-
-#### Validate Emails
-Checks email format and detects common typos in domains (e.g., gmial.com → gmail.com).
-
-#### Prioritize Internal
-Moves internal domain recipients to the top of the list while maintaining alphabetical order.
-
-#### Remove External
-Filters out all external recipients, keeping only internal domain addresses.
-
-### Keyboard Shortcuts
-
-- `Ctrl+Alt+C` - Open ClearSend panel
-- `Ctrl+Alt+Q` - Quick clean (one-click processing)
-
-## 🤝 Contributing
-
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-### Development Workflow
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes
-4. Run tests and linting (`npm run lint`)
-5. Commit your changes (`git commit -m 'Add amazing feature'`)
-6. Push to the branch (`git push origin feature/amazing-feature`)
-7. Open a Pull Request
 
 ## 📋 Project Structure
 
@@ -165,66 +127,44 @@ ClearSend/
 ├── src/
 │   ├── taskpane/
 │   │   ├── taskpane.html          # Main UI
-│   │   ├── taskpane.js            # UI logic
-│   │   ├── processors.js          # Processing library
-│   │   └── clearsend.css          # Styles
+│   │   ├── taskpane.js            # UI logic and Office.js integration
+│   │   ├── processors.js          # Client-side processing library
+│   │   └── clearsend.css          # Fluent UI styles
 │   └── commands/
-│       ├── commands.html          # Command functions
-│       └── commands.js            # Quick actions
+│       ├── commands.html          # Command function UI
+│       └── commands.js            # Quick Clean ribbon action
 ├── assets/                        # Icons and images
-├── manifest.xml                   # Development manifest
-├── manifest.prod.xml              # Production manifest
+├── api/                           # Vercel serverless functions (static hosting only)
+├── manifest.xml                   # Development manifest (localhost)
+├── manifest.prod.xml              # Production manifest (Vercel)
 ├── webpack.config.js              # Build configuration
+├── vercel.json                    # Vercel deployment config
 └── package.json                   # Dependencies
 ```
 
-## 🐛 Troubleshooting
-
-### Add-in Not Loading
-
-1. Clear browser cache (Ctrl+Shift+R)
-2. Restart Outlook
-3. Check the browser console for errors
-4. Verify manifest URLs are correct
-
-### Recipients Not Updating
-
-1. Ensure you have write permissions for the email
-2. Check that the email is in compose mode
-3. Try the Refresh button (🔄)
-
-### Common Issues
-
-- **Issue**: "Failed to update recipients"
-  **Solution**: Check Office.js permissions in manifest
-
-- **Issue**: Add-in shows blank screen
-  **Solution**: Verify all assets are loaded correctly
 
 ## 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+### Disclaimer
 
-- Microsoft Office Add-ins team for the excellent documentation
-- Fluent UI team for the design system
-- All contributors who have helped improve ClearSend
+**THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.**
+
+By using ClearSend, you acknowledge that:
+- You use this software at your own risk
+- The authors and contributors are not responsible for any data loss, email delivery issues, or other problems that may arise from using this software
+- This is free, open-source software provided with no guarantees or warranties
+- You are responsible for testing and verifying the software meets your needs before relying on it for critical operations
+
 
 ## 📧 Support
 
 - **Issues**: [GitHub Issues](https://github.com/fhuerta01/ClearSend/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/fhuerta01/ClearSend/discussions)
-- **Email**: [support@clearsend.com](mailto:support@clearsend.com)
-
-## 🗺️ Roadmap
-
-- [ ] Advanced filtering rules
-- [ ] Recipient analytics and insights
-- [ ] Integration with contact management
-- [ ] Team collaboration features
-- [ ] Custom domain rules
+- **Email**: clear_send@outlook.com
+- **Privacy Policy**: [PRIVACY.md](PRIVACY.md)
 
 ---
 
-Made with ❤️ by the ClearSend team
+Made with ❤️ for privacy-conscious distribution lists owners

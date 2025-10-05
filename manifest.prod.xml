@@ -9,7 +9,7 @@
   <Id>8af20496-0c8d-4599-9fa3-3d8f68f723a8</Id>
 
   <!-- Version number in the format major.minor.build.revision -->
-  <Version>1.0.0.0</Version>
+  <Version>1.1.0.0</Version>
 
   <!-- Provider/Publisher name -->
   <ProviderName>ClearSend</ProviderName>

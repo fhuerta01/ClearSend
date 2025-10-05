@@ -2,7 +2,6 @@
  * ClearSend Client-Side Processing Library
  *
  * PRIVACY GUARANTEE: All email recipient processing logic runs 100% locally.
- *
  * - Your email addresses NEVER leave your device
  * - All operations execute in your browser's memory
  * - No network calls transmit any email data
@@ -12,21 +11,23 @@
  * entirely within your Outlook application (desktop or web browser).
  */
 
+/* global window */
+
 // ============================================================================
 // UTILITY FUNCTIONS
 // ============================================================================
 
 function extractEmail(recipient) {
-  if (!recipient || typeof recipient !== 'string') {
-    return '';
+  if (!recipient || typeof recipient !== "string") {
+    return "";
   }
   const match = recipient.match(/<(.+)>$/);
   return match ? match[1].trim() : recipient.trim();
 }
 
 function extractDisplayName(recipient) {
-  if (!recipient || typeof recipient !== 'string') {
-    return '';
+  if (!recipient || typeof recipient !== "string") {
+    return "";
   }
   const match = recipient.match(/^(.+?)\s*<(.+)>$/);
   if (match) {
@@ -58,7 +59,7 @@ function sortStep(state) {
   const input = {
     to: [...state.to],
     cc: [...state.cc],
-    bcc: [...state.bcc]
+    bcc: [...state.bcc],
   };
 
   const sortedTo = sortAlphabetical([...state.to]);
@@ -66,14 +67,14 @@ function sortStep(state) {
   const sortedBcc = sortAlphabetical([...state.bcc]);
 
   const action = {
-    type: 'sort',
+    type: "sort",
     input: input,
     output: {
       to: sortedTo,
       cc: sortedCc,
-      bcc: sortedBcc
+      bcc: sortedBcc,
     },
-    processed: input.to.length + input.cc.length + input.bcc.length
+    processed: input.to.length + input.cc.length + input.bcc.length,
   };
 
   return {
@@ -81,7 +82,7 @@ function sortStep(state) {
     to: sortedTo,
     cc: sortedCc,
     bcc: sortedBcc,
-    actions: [...state.actions, action]
+    actions: [...state.actions, action],
   };
 }
 
@@ -93,7 +94,7 @@ function removeDuplicates(recipients) {
   const seen = new Set();
   const removed = [];
 
-  const unique = recipients.filter(recipient => {
+  const unique = recipients.filter((recipient) => {
     const email = extractEmail(recipient).toLowerCase();
     if (seen.has(email)) {
       removed.push(recipient);
@@ -117,7 +118,7 @@ function dedupeArrays(to, cc, bcc) {
   const finalBcc = [];
   const crossArrayRemoved = [];
 
-  uniqueTo.forEach(recipient => {
+  uniqueTo.forEach((recipient) => {
     const email = extractEmail(recipient).toLowerCase();
     if (!allEmails.has(email)) {
       allEmails.add(email);
@@ -127,7 +128,7 @@ function dedupeArrays(to, cc, bcc) {
     }
   });
 
-  uniqueCc.forEach(recipient => {
+  uniqueCc.forEach((recipient) => {
     const email = extractEmail(recipient).toLowerCase();
     if (!allEmails.has(email)) {
       allEmails.add(email);
@@ -137,7 +138,7 @@ function dedupeArrays(to, cc, bcc) {
     }
   });
 
-  uniqueBcc.forEach(recipient => {
+  uniqueBcc.forEach((recipient) => {
     const email = extractEmail(recipient).toLowerCase();
     if (!allEmails.has(email)) {
       allEmails.add(email);
@@ -151,12 +152,7 @@ function dedupeArrays(to, cc, bcc) {
     to: finalTo,
     cc: finalCc,
     bcc: finalBcc,
-    removed: [
-      ...removedFromTo,
-      ...removedFromCc,
-      ...removedFromBcc,
-      ...crossArrayRemoved
-    ]
+    removed: [...removedFromTo, ...removedFromCc, ...removedFromBcc, ...crossArrayRemoved],
   };
 }
 
@@ -164,22 +160,22 @@ function dedupeStep(state) {
   const input = {
     to: [...state.to],
     cc: [...state.cc],
-    bcc: [...state.bcc]
+    bcc: [...state.bcc],
   };
 
   const result = dedupeArrays(state.to, state.cc, state.bcc);
 
   const action = {
-    type: 'dedupe',
+    type: "dedupe",
     input: input,
     removed: result.removed,
     output: {
       to: result.to,
       cc: result.cc,
-      bcc: result.bcc
+      bcc: result.bcc,
     },
     processed: input.to.length + input.cc.length + input.bcc.length,
-    duplicatesFound: result.removed.length
+    duplicatesFound: result.removed.length,
   };
 
   return {
@@ -187,7 +183,7 @@ function dedupeStep(state) {
     to: result.to,
     cc: result.cc,
     bcc: result.bcc,
-    actions: [...state.actions, action]
+    actions: [...state.actions, action],
   };
 }
 
@@ -196,94 +192,95 @@ function dedupeStep(state) {
 // ============================================================================
 
 const COMMON_TYPOS = {
-  'gmial.com': 'gmail.com',
-  'gmai.com': 'gmail.com',
-  'gmal.com': 'gmail.com',
-  'yahooo.com': 'yahoo.com',
-  'yaho.com': 'yahoo.com',
-  'hotmial.com': 'hotmail.com',
-  'hotmial.co': 'hotmail.com',
-  'outlok.com': 'outlook.com',
-  'outloo.com': 'outlook.com',
-  'microsft.com': 'microsoft.com',
-  'mircosoft.com': 'microsoft.com'
+  "gmial.com": "gmail.com",
+  "gmai.com": "gmail.com",
+  "gmal.com": "gmail.com",
+  "yahooo.com": "yahoo.com",
+  "yaho.com": "yahoo.com",
+  "hotmial.com": "hotmail.com",
+  "hotmial.co": "hotmail.com",
+  "outlok.com": "outlook.com",
+  "outloo.com": "outlook.com",
+  "microsft.com": "microsoft.com",
+  "mircosoft.com": "microsoft.com",
 };
 
 function validateEmailFormat(email) {
-  if (!email || typeof email !== 'string') {
-    return { isValid: false, message: 'Empty or invalid email address' };
+  if (!email || typeof email !== "string") {
+    return { isValid: false, message: "Empty or invalid email address" };
   }
 
   email = email.trim();
 
-  if (email.length <= 3 && !email.includes('@')) {
-    return { isValid: false, message: 'Email address is too short or malformed' };
+  if (email.length <= 3 && !email.includes("@")) {
+    return { isValid: false, message: "Email address is too short or malformed" };
   }
 
-  if (email.endsWith(':') && !email.includes('@')) {
-    return { isValid: false, message: 'Email appears to be incomplete or malformed' };
+  if (email.endsWith(":") && !email.includes("@")) {
+    return { isValid: false, message: "Email appears to be incomplete or malformed" };
   }
 
   if (email.length === 0) {
-    return { isValid: false, message: 'Empty email address' };
+    return { isValid: false, message: "Empty email address" };
   }
 
-  if (!email.includes('@')) {
-    return { isValid: false, message: 'Email must contain @ symbol' };
+  if (!email.includes("@")) {
+    return { isValid: false, message: "Email must contain @ symbol" };
   }
 
-  if (email.split('@').length !== 2) {
-    return { isValid: false, message: 'Email must contain exactly one @ symbol' };
+  if (email.split("@").length !== 2) {
+    return { isValid: false, message: "Email must contain exactly one @ symbol" };
   }
 
-  const [localPart, domainPart] = email.split('@');
+  const [localPart, domainPart] = email.split("@");
 
   if (!localPart || localPart.length === 0) {
-    return { isValid: false, message: 'Email must have content before @ symbol' };
+    return { isValid: false, message: "Email must have content before @ symbol" };
   }
 
   if (localPart.length > 64) {
-    return { isValid: false, message: 'Local part of email is too long' };
+    return { isValid: false, message: "Local part of email is too long" };
   }
 
   if (!domainPart || domainPart.length === 0) {
-    return { isValid: false, message: 'Email must have content after @ symbol' };
+    return { isValid: false, message: "Email must have content after @ symbol" };
   }
 
   if (domainPart.length > 253) {
-    return { isValid: false, message: 'Domain part of email is too long' };
+    return { isValid: false, message: "Domain part of email is too long" };
   }
 
-  if (!domainPart.includes('.')) {
-    return { isValid: false, message: 'Domain must contain at least one dot' };
+  if (!domainPart.includes(".")) {
+    return { isValid: false, message: "Domain must contain at least one dot" };
   }
 
-  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+  const emailRegex =
+    /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
   if (!emailRegex.test(email)) {
-    return { isValid: false, message: 'Invalid email format' };
+    return { isValid: false, message: "Invalid email format" };
   }
 
-  if (email.includes('..')) {
-    return { isValid: false, message: 'Email contains consecutive dots' };
+  if (email.includes("..")) {
+    return { isValid: false, message: "Email contains consecutive dots" };
   }
 
-  if (email.startsWith('.') || email.endsWith('.')) {
-    return { isValid: false, message: 'Email starts or ends with a dot' };
+  if (email.startsWith(".") || email.endsWith(".")) {
+    return { isValid: false, message: "Email starts or ends with a dot" };
   }
 
-  if (email.includes('@.') || email.includes('.@')) {
-    return { isValid: false, message: 'Invalid dot placement near @ symbol' };
+  if (email.includes("@.") || email.includes(".@")) {
+    return { isValid: false, message: "Invalid dot placement near @ symbol" };
   }
 
-  if (email.startsWith('-') || email.endsWith('-')) {
-    return { isValid: false, message: 'Email starts or ends with hyphen' };
+  if (email.startsWith("-") || email.endsWith("-")) {
+    return { isValid: false, message: "Email starts or ends with hyphen" };
   }
 
-  const domainParts = domainPart.split('.');
+  const domainParts = domainPart.split(".");
   const tld = domainParts[domainParts.length - 1];
   if (tld.length < 2) {
-    return { isValid: false, message: 'Top-level domain must be at least 2 characters' };
+    return { isValid: false, message: "Top-level domain must be at least 2 characters" };
   }
 
   return { isValid: true };
@@ -330,7 +327,7 @@ function getEditDistance(str1, str2) {
 }
 
 function checkForTypos(email) {
-  const domain = email.split('@')[1];
+  const domain = email.split("@")[1];
   if (!domain) {
     return { hasTypo: false };
   }
@@ -339,32 +336,32 @@ function checkForTypos(email) {
 
   if (COMMON_TYPOS[lowerDomain]) {
     const correctedEmail = email.replace(
-      new RegExp(domain.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'),
+      new RegExp(domain.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"),
       COMMON_TYPOS[lowerDomain]
     );
 
     return {
       hasTypo: true,
       suggestion: correctedEmail,
-      message: `Did you mean "${correctedEmail}"?`
+      message: `Did you mean "${correctedEmail}"?`,
     };
   }
 
-  const commonDomains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'microsoft.com'];
+  const commonDomains = ["gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "microsoft.com"];
 
   for (const commonDomain of commonDomains) {
     if (Math.abs(lowerDomain.length - commonDomain.length) <= 2) {
       const similarity = calculateSimilarity(lowerDomain, commonDomain);
       if (similarity > 0.8) {
         const correctedEmail = email.replace(
-          new RegExp(domain.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'),
+          new RegExp(domain.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"),
           commonDomain
         );
 
         return {
           hasTypo: true,
           suggestion: correctedEmail,
-          message: `Did you mean "${correctedEmail}"?`
+          message: `Did you mean "${correctedEmail}"?`,
         };
       }
     }
@@ -379,22 +376,22 @@ function validateRecipient(recipient) {
     address: recipient,
     email: email,
     isValid: true,
-    status: 'valid',
+    status: "valid",
     warnings: [],
-    suggestions: []
+    suggestions: [],
   };
 
   const formatCheck = validateEmailFormat(email);
   if (!formatCheck.isValid) {
     results.isValid = false;
-    results.status = 'error';
+    results.status = "error";
     results.warnings.push(formatCheck.message);
     return results;
   }
 
   const typoCheck = checkForTypos(email);
   if (typoCheck.hasTypo) {
-    results.status = 'warning';
+    results.status = "warning";
     results.warnings.push(typoCheck.message);
     results.suggestions.push(typoCheck.suggestion);
   }
@@ -411,15 +408,15 @@ function validateAndFilterRecipients(recipients) {
       const result = validateRecipient(recipient);
       results.push(result);
 
-      if (result.status === 'valid' || result.status === 'warning') {
+      if (result.status === "valid" || result.status === "warning") {
         validRecipients.push(recipient);
       }
     } catch (error) {
       const errorResult = {
         address: recipient,
         email: extractEmail(recipient),
-        status: 'error',
-        warnings: ['Validation failed: ' + error.message]
+        status: "error",
+        warnings: ["Validation failed: " + error.message],
       };
       results.push(errorResult);
     }
@@ -432,7 +429,7 @@ function validateStep(state) {
   const input = {
     to: [...state.to],
     cc: [...state.cc],
-    bcc: [...state.bcc]
+    bcc: [...state.bcc],
   };
 
   const processedTo = validateAndFilterRecipients(state.to);
@@ -442,20 +439,20 @@ function validateStep(state) {
   const allValidationResults = [
     ...processedTo.results,
     ...processedCc.results,
-    ...processedBcc.results
+    ...processedBcc.results,
   ];
 
-  const errors = allValidationResults.filter(r => r.status === 'error');
-  const warnings = allValidationResults.filter(r => r.status === 'warning');
-  const valid = allValidationResults.filter(r => r.status === 'valid');
+  const errors = allValidationResults.filter((r) => r.status === "error");
+  const warnings = allValidationResults.filter((r) => r.status === "warning");
+  const valid = allValidationResults.filter((r) => r.status === "valid");
 
   const action = {
-    type: 'validate',
+    type: "validate",
     input: input,
     output: {
       to: processedTo.validRecipients,
       cc: processedCc.validRecipients,
-      bcc: processedBcc.validRecipients
+      bcc: processedBcc.validRecipients,
     },
     validationResults: allValidationResults,
     errors: errors,
@@ -464,7 +461,7 @@ function validateStep(state) {
     validCount: valid.length,
     warningCount: warnings.length,
     errorCount: errors.length,
-    removedInvalid: errors.length
+    removedInvalid: errors.length,
   };
 
   return {
@@ -472,7 +469,7 @@ function validateStep(state) {
     to: processedTo.validRecipients,
     cc: processedCc.validRecipients,
     bcc: processedBcc.validRecipients,
-    actions: [...state.actions, action]
+    actions: [...state.actions, action],
   };
 }
 
@@ -481,15 +478,15 @@ function validateStep(state) {
 // ============================================================================
 
 function getDomainIndex(email, internalDomains) {
-  if (!email || !email.includes('@')) {
+  if (!email || !email.includes("@")) {
     return -1;
   }
 
-  const domain = email.split('@')[1].toLowerCase();
+  const domain = email.split("@")[1].toLowerCase();
 
   for (let i = 0; i < internalDomains.length; i++) {
     const internalDomain = internalDomains[i].toLowerCase();
-    if (domain === internalDomain || domain.endsWith('.' + internalDomain)) {
+    if (domain === internalDomain || domain.endsWith("." + internalDomain)) {
       return i;
     }
   }
@@ -509,7 +506,7 @@ function prioritizeInternal(recipients, internalDomains, sortAlphabetically = fa
   const internal = [];
   const external = [];
 
-  recipients.forEach(recipient => {
+  recipients.forEach((recipient) => {
     const email = extractEmail(recipient);
     const domainIndex = getDomainIndex(email, internalDomains);
 
@@ -552,35 +549,32 @@ function prioritizeInternal(recipients, internalDomains, sortAlphabetically = fa
     });
   }
 
-  return [
-    ...internal.map(item => item.recipient),
-    ...external.map(item => item.recipient)
-  ];
+  return [...internal.map((item) => item.recipient), ...external.map((item) => item.recipient)];
 }
 
 function prioritizeInternalStep(state) {
   const input = {
     to: [...state.to],
     cc: [...state.cc],
-    bcc: [...state.bcc]
+    bcc: [...state.bcc],
   };
 
   const internalDomains = state.internalDomains || [];
-  const sortAlphabetically = state.enabledSteps?.includes('sort') || false;
+  const sortAlphabetically = state.enabledSteps?.includes("sort") || false;
 
   const prioritizedTo = prioritizeInternal([...state.to], internalDomains, sortAlphabetically);
   const prioritizedCc = prioritizeInternal([...state.cc], internalDomains, sortAlphabetically);
   const prioritizedBcc = prioritizeInternal([...state.bcc], internalDomains, sortAlphabetically);
 
   const action = {
-    type: 'prioritizeInternal',
+    type: "prioritizeInternal",
     input: input,
     output: {
       to: prioritizedTo,
       cc: prioritizedCc,
-      bcc: prioritizedBcc
+      bcc: prioritizedBcc,
     },
-    processed: input.to.length + input.cc.length + input.bcc.length
+    processed: input.to.length + input.cc.length + input.bcc.length,
   };
 
   return {
@@ -588,7 +582,7 @@ function prioritizeInternalStep(state) {
     to: prioritizedTo,
     cc: prioritizedCc,
     bcc: prioritizedBcc,
-    actions: [...state.actions, action]
+    actions: [...state.actions, action],
   };
 }
 
@@ -597,15 +591,15 @@ function prioritizeInternalStep(state) {
 // ============================================================================
 
 function isInternalDomain(email, internalDomains) {
-  if (!email || !email.includes('@')) {
+  if (!email || !email.includes("@")) {
     return false;
   }
 
-  const domain = email.split('@')[1].toLowerCase();
+  const domain = email.split("@")[1].toLowerCase();
 
   for (const internalDomain of internalDomains) {
     const internal = internalDomain.toLowerCase();
-    if (domain === internal || domain.endsWith('.' + internal)) {
+    if (domain === internal || domain.endsWith("." + internal)) {
       return true;
     }
   }
@@ -625,7 +619,7 @@ function removeExternal(recipients, internalDomains) {
   const filtered = [];
   const removed = [];
 
-  recipients.forEach(recipient => {
+  recipients.forEach((recipient) => {
     const email = extractEmail(recipient);
 
     if (isInternalDomain(email, internalDomains)) {
@@ -642,7 +636,7 @@ function removeExternalStep(state) {
   const input = {
     to: [...state.to],
     cc: [...state.cc],
-    bcc: [...state.bcc]
+    bcc: [...state.bcc],
   };
 
   const internalDomains = state.internalDomains || [];
@@ -654,20 +648,20 @@ function removeExternalStep(state) {
   const totalRemoved = toResult.removed.length + ccResult.removed.length + bccResult.removed.length;
 
   const action = {
-    type: 'removeExternal',
+    type: "removeExternal",
     input: input,
     output: {
       to: toResult.filtered,
       cc: ccResult.filtered,
-      bcc: bccResult.filtered
+      bcc: bccResult.filtered,
     },
     removed: {
       to: toResult.removed,
       cc: ccResult.removed,
       bcc: bccResult.removed,
-      total: totalRemoved
+      total: totalRemoved,
     },
-    processed: input.to.length + input.cc.length + input.bcc.length
+    processed: input.to.length + input.cc.length + input.bcc.length,
   };
 
   return {
@@ -675,7 +669,7 @@ function removeExternalStep(state) {
     to: toResult.filtered,
     cc: ccResult.filtered,
     bcc: bccResult.filtered,
-    actions: [...state.actions, action]
+    actions: [...state.actions, action],
   };
 }
 
@@ -688,7 +682,7 @@ function isExternalEmail(email, orgDomain) {
     return false;
   }
 
-  const emailDomain = email.split('@')[1];
+  const emailDomain = email.split("@")[1];
   if (!emailDomain) {
     return true;
   }
@@ -700,7 +694,7 @@ function isExternalEmail(email, orgDomain) {
     return false;
   }
 
-  if (normalizedEmailDomain.endsWith('.' + normalizedOrgDomain)) {
+  if (normalizedEmailDomain.endsWith("." + normalizedOrgDomain)) {
     return false;
   }
 
@@ -711,21 +705,21 @@ function categorizeRecipients(recipients, orgDomain) {
   const internal = [];
   const external = [];
 
-  recipients.forEach(recipient => {
+  recipients.forEach((recipient) => {
     const email = extractEmail(recipient);
     if (isExternalEmail(email, orgDomain)) {
       external.push({
         recipient,
         email,
-        domain: email.split('@')[1] || 'unknown',
-        isExternal: true
+        domain: email.split("@")[1] || "unknown",
+        isExternal: true,
       });
     } else {
       internal.push({
         recipient,
         email,
-        domain: email.split('@')[1] || 'unknown',
-        isExternal: false
+        domain: email.split("@")[1] || "unknown",
+        isExternal: false,
       });
     }
   });
@@ -738,33 +732,33 @@ function flagExternalStep(state) {
 
   if (!orgDomain) {
     const action = {
-      type: 'flagExt',
+      type: "flagExt",
       input: {
         to: [...state.to],
         cc: [...state.cc],
-        bcc: [...state.bcc]
+        bcc: [...state.bcc],
       },
       output: {
         to: state.to,
         cc: state.cc,
-        bcc: state.bcc
+        bcc: state.bcc,
       },
       flagged: [],
       processed: 0,
       skipped: true,
-      message: 'No organization domain provided'
+      message: "No organization domain provided",
     };
 
     return {
       ...state,
-      actions: [...state.actions, action]
+      actions: [...state.actions, action],
     };
   }
 
   const input = {
     to: [...state.to],
     cc: [...state.cc],
-    bcc: [...state.bcc]
+    bcc: [...state.bcc],
   };
 
   const toCategorized = categorizeRecipients(state.to, orgDomain);
@@ -772,9 +766,9 @@ function flagExternalStep(state) {
   const bccCategorized = categorizeRecipients(state.bcc, orgDomain);
 
   const allExternal = [
-    ...toCategorized.external.map(r => ({ ...r, field: 'to' })),
-    ...ccCategorized.external.map(r => ({ ...r, field: 'cc' })),
-    ...bccCategorized.external.map(r => ({ ...r, field: 'bcc' }))
+    ...toCategorized.external.map((r) => ({ ...r, field: "to" })),
+    ...ccCategorized.external.map((r) => ({ ...r, field: "cc" })),
+    ...bccCategorized.external.map((r) => ({ ...r, field: "bcc" })),
   ];
 
   const externalDomains = allExternal.reduce((acc, recipient) => {
@@ -787,28 +781,28 @@ function flagExternalStep(state) {
   }, {});
 
   const action = {
-    type: 'flagExt',
+    type: "flagExt",
     input: input,
     output: {
       to: state.to,
       cc: state.cc,
-      bcc: state.bcc
+      bcc: state.bcc,
     },
-    flagged: allExternal.map(r => r.recipient),
+    flagged: allExternal.map((r) => r.recipient),
     externalByDomain: externalDomains,
     summary: {
       totalRecipients: state.to.length + state.cc.length + state.bcc.length,
       externalCount: allExternal.length,
-      internalCount: (state.to.length + state.cc.length + state.bcc.length) - allExternal.length,
-      uniqueExternalDomains: Object.keys(externalDomains).length
+      internalCount: state.to.length + state.cc.length + state.bcc.length - allExternal.length,
+      uniqueExternalDomains: Object.keys(externalDomains).length,
     },
     orgDomain: orgDomain,
-    processed: state.to.length + state.cc.length + state.bcc.length
+    processed: state.to.length + state.cc.length + state.bcc.length,
   };
 
   return {
     ...state,
-    actions: [...state.actions, action]
+    actions: [...state.actions, action],
   };
 }
 
@@ -818,12 +812,12 @@ function flagExternalStep(state) {
 
 function processRecipients(payload) {
   const stepMap = {
-    'sort': sortStep,
-    'dedupe': dedupeStep,
-    'validate': validateStep,
-    'prioritizeInternal': prioritizeInternalStep,
-    'removeExternal': removeExternalStep,
-    'flagExt': flagExternalStep
+    sort: sortStep,
+    dedupe: dedupeStep,
+    validate: validateStep,
+    prioritizeInternal: prioritizeInternalStep,
+    removeExternal: removeExternalStep,
+    flagExt: flagExternalStep,
   };
 
   let state = {
@@ -832,8 +826,8 @@ function processRecipients(payload) {
     bcc: payload.bcc || [],
     enabledSteps: payload.userSettings?.enabledSteps || [],
     internalDomains: payload.userSettings?.internalDomains || [],
-    orgDomain: payload.userSettings?.orgDomain || '',
-    actions: []
+    orgDomain: payload.userSettings?.orgDomain || "",
+    actions: [],
   };
 
   for (const stepName of state.enabledSteps) {
@@ -852,22 +846,23 @@ function processRecipients(payload) {
     result: {
       to: state.to,
       cc: state.cc,
-      bcc: state.bcc
+      bcc: state.bcc,
     },
     actions: state.actions,
     summary: {
-      totalProcessed: (payload.to?.length || 0) + (payload.cc?.length || 0) + (payload.bcc?.length || 0),
+      totalProcessed:
+        (payload.to?.length || 0) + (payload.cc?.length || 0) + (payload.bcc?.length || 0),
       totalRemaining: state.to.length + state.cc.length + state.bcc.length,
-      stepsExecuted: state.actions.length
-    }
+      stepsExecuted: state.actions.length,
+    },
   };
 }
 
 // Export for use in taskpane.js
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   window.ClearSendProcessors = {
     processRecipients,
     extractEmail,
-    extractDisplayName
+    extractDisplayName,
   };
 }

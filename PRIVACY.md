@@ -35,16 +35,33 @@ ClearSend is designed with privacy as its foundation. All email processing happe
 4. **Zero Transmission**: At no point does any data leave your Outlook application
 
 **Technical Details:**
-- All JavaScript code runs in your browser's sandboxed environment
+- All JavaScript code runs in your client's sandboxed environment
 - No `fetch()`, `XMLHttpRequest`, or network calls to external services
-- Email addresses remain in memory only - never serialized for transmission
+- Email addresses remain in memory only during processing - never serialized for transmission
 - Source code is open for verification: every line of code is reviewable
 
-### Settings Storage
+### Local Storage
 
-- Your preferences (enabled features, internal domains) are stored locally in Office.js roaming settings
-- This data is managed by Microsoft Office and syncs across your Office installations
-- We do not have access to this data
+ClearSend stores configuration data **locally on your device only** using Office.js roaming settings:
+
+**What is stored locally:**
+- Processing options (which features are enabled/disabled)
+- Internal domains configuration (your organization's domains)
+- Invalid email addresses list (if "Save invalid addresses" feature is enabled)
+- Processing order preferences (drag-and-drop configuration)
+
+**How it's stored:**
+- All data is stored using Office.js roaming settings API
+- This data is managed entirely by Microsoft Office and syncs across your Office installations via Microsoft's infrastructure
+- Storage is local to your Microsoft account and Office environment
+- **We do not have access to this data** - it never reaches our servers
+- Only you and Microsoft Office can access your roaming settings
+
+**What is NOT stored:**
+- Email addresses from recipient fields (discarded after processing)
+- Email content or message bodies
+- Contact information
+- Any personally identifiable information beyond what you explicitly configure (internal domains)
 
 ## Third-Party Services
 
@@ -90,7 +107,7 @@ We will update this policy if our practices change. Check the "Last Updated" dat
 
 ## Contact
 
-Questions about privacy? Open an issue on GitHub or email privacy@clearsend.com
+Questions about privacy? Contact us at clear_send@outlook.com or open an issue on GitHub
 
 ## Your Rights
 

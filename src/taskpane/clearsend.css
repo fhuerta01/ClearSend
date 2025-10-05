@@ -64,18 +64,87 @@ body {
 /* ===== CONTENT CONTAINER ===== */
 .tab-content-container {
     height: calc(100vh - 60px); /* Adjust for footer (no tab navigation) */
-    overflow-y: auto;
+    overflow: hidden; /* Changed from overflow-y: auto to prevent scrollbar during animation */
     padding: 0;
     background-color: #ffffff;
+    position: relative;
 }
 
 .tab-content {
     display: none;
     padding: 16px 16px 0 16px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow-y: auto;
+    background-color: #ffffff;
 }
 
 .tab-content.active {
     display: block;
+}
+
+/* Slide animations */
+.tab-content.slide-out-left {
+    animation: slideOutLeft 0.3s ease-in-out forwards;
+}
+
+.tab-content.slide-in-left {
+    animation: slideInLeft 0.3s ease-in-out forwards;
+}
+
+.tab-content.slide-out-right {
+    animation: slideOutRight 0.3s ease-in-out forwards;
+}
+
+.tab-content.slide-in-right {
+    animation: slideInRight 0.3s ease-in-out forwards;
+}
+
+@keyframes slideOutLeft {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
 }
 
 /* ===== FOOTER ACTION BUTTONS (shared style for all footer buttons) ===== */
@@ -336,7 +405,7 @@ body {
 
 /* ===== LIST SECTION ===== */
 .list-section {
-    margin-bottom: 0;
+    margin-bottom: 16px;
     padding: 12px 12px 0 12px;
     background-color: transparent;
     border: none;
@@ -403,6 +472,42 @@ body {
 .config-section-title {
     margin: 0;
     color: #323130;
+}
+
+.config-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+}
+
+.config-item-text {
+    font-size: 14px;
+    color: #323130;
+}
+
+.config-item-btn {
+    padding: 6px 16px;
+    background-color: #0078d4;
+    color: white;
+    border: none;
+    border-radius: 2px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.config-item-btn:hover {
+    background-color: #106ebe;
+}
+
+.config-item-btn:active {
+    background-color: #005a9e;
+}
+
+.config-item-btn:disabled {
+    background-color: #c8c6c4;
+    cursor: not-allowed;
 }
 
 /* Old panel section styles (kept for backwards compatibility if needed) */
@@ -591,6 +696,12 @@ body {
 .field-count {
     font-weight: 600;
     color: #323130;
+}
+
+.field-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
 }
 
 .field-toggle-btn {
@@ -884,12 +995,79 @@ body {
     padding: 12px;
     border: 1px solid #edebe9;
     border-radius: 2px;
-    cursor: pointer;
+    cursor: move;
+    transition: all 0.2s ease;
+    user-select: none;
 }
 
 .feature-item:hover {
     background-color: #faf9f8;
     border-color: #d2d0ce;
+}
+
+.feature-item input[type="checkbox"] {
+    cursor: pointer;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.feature-item .feature-text {
+    cursor: move;
+    flex: 1;
+}
+
+.feature-item.dragging {
+    opacity: 0.5;
+    cursor: grabbing;
+}
+
+.feature-item.drag-over {
+    border-top: 2px solid #0078d4;
+    margin-top: -1px;
+}
+
+.feature-item.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.feature-item.disabled:hover {
+    background-color: transparent;
+    border-color: #edebe9;
+}
+
+.feature-item.disabled input[type="checkbox"] {
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.feature-item.disabled .feature-text {
+    color: #a19f9d;
+    cursor: not-allowed;
+}
+
+.feature-item.disabled .drag-handle {
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.drag-handle {
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: grab;
+    color: #605e5c;
+    transition: color 0.2s;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+.drag-handle:hover {
+    color: #0078d4;
+}
+
+.drag-handle:active {
+    cursor: grabbing;
 }
 
 .feature-checkbox {
@@ -1150,9 +1328,20 @@ body {
 @media (prefers-reduced-motion: reduce) {
     .progress-fill,
     .toast,
-    .loading-spinner {
-        animation: none;
-        transition: none;
+    .loading-spinner,
+    .tab-content {
+        animation: none !important;
+        transition: none !important;
+    }
+
+    /* Instant tab switching for reduced motion */
+    .tab-content.slide-out-left,
+    .tab-content.slide-in-left,
+    .tab-content.slide-out-right,
+    .tab-content.slide-in-right {
+        animation: none !important;
+        transform: none !important;
+        opacity: 1 !important;
     }
 }
 
@@ -1220,6 +1409,11 @@ body {
     border: 1px solid #605e5c;
     border-radius: 2px;
     font-size: 14px;
+}
+
+.domain-input.placeholder {
+    color: #a19f9d;
+    font-style: italic;
 }
 
 .domain-input:focus {

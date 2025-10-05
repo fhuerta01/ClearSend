@@ -30,7 +30,7 @@ This Code of Conduct applies to all project spaces and when representing the pro
 
 ## Enforcement
 
-Instances of unacceptable behavior may be reported to the project team. All complaints will be reviewed and investigated promptly and fairly.
+Instances of unacceptable behavior may be reported to the project team at clear_send@outlook.com. All complaints will be reviewed and investigated promptly and fairly.
 
 ## Attribution
 
