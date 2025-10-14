@@ -169,6 +169,10 @@ By using ClearSend, you acknowledge that:
 - **Email**: clear_send@outlook.com
 - **Privacy Policy**: [PRIVACY.md](PRIVACY.md)
 
+## ✨ Contribute
+
+- **Buy me a coffee**: [paypal.me/fhuerta01](https://paypal.me/fhuerta01)
+
 ---
 
 Made with ❤️ for privacy-conscious distribution lists owners
