@@ -10,8 +10,8 @@
 
 /* global Office, document, window, setTimeout, setInterval, clearTimeout, clearInterval, Blob, URL */
 
-// Privacy-safe analytics (optional - only counts add-in loads)
-import { initAnalytics } from './analytics.js';
+// Vercel Analytics - privacy-friendly page view tracking
+import { inject } from '@vercel/analytics';
 
 /**
  * Configuration Constants
@@ -108,8 +108,8 @@ const ClearSend = {
 // Initialize ClearSend when Office is ready
 Office.onReady((info) => {
   if (info.host === Office.HostType.Outlook) {
-    // Initialize privacy-safe analytics (optional - just counts usage)
-    initAnalytics();
+    // Initialize Vercel Analytics (privacy-friendly page view tracking)
+    inject();
 
     initializeClearSend();
     // Setup cleanup handler to prevent memory leaks

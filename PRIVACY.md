@@ -23,40 +23,35 @@ ClearSend is designed with privacy as its foundation. All email processing happe
 
 **We cannot access your email data because it never reaches us.**
 
-### Minimal Usage Analytics (Optional)
+### Minimal Usage Analytics
 
-**Only if enabled**: We collect a single anonymous count of add-in loads.
+**For Vercel-hosted version only**: We use Vercel Analytics to track anonymous page views.
 
-**What IS collected** (if analytics enabled):
-- ✅ A simple counter increment when the add-in loads
-- That's it. Just a number.
+**What IS collected** (Vercel-hosted version only):
+- ✅ Anonymous page view counts
+- ✅ No cookies (on Vercel's free tier)
+- ✅ Privacy-friendly by design
 
-**What is NOT collected** (even with analytics):
+**What is NOT collected**:
 - ❌ No user identification (no names, emails, IDs)
-- ❌ No IP addresses stored
-- ❌ No timestamps or usage patterns
 - ❌ No email addresses or recipient data
-- ❌ No browser fingerprinting
-- ❌ No device information
-- ❌ No location data
-- ❌ No cookies or session tracking
+- ❌ No cookies or persistent tracking (on free tier)
+- ❌ No personal information
 
 **Why**: This helps us understand approximate usage volume (e.g., "~1,000 people use this") for development prioritization. Nothing more.
 
-**How to disable**: Analytics can be disabled entirely in the source code by setting `ENABLED: false` in `src/taskpane/analytics.js`, or by simply not calling `initAnalytics()`.
+**How to avoid**: Clone the repository and self-host locally. Local installations (manifest.xml) are NOT tracked by Vercel Analytics - only the production Vercel-hosted version (manifest.prod.xml) sends anonymous page views.
 
-**Technical details**: A single POST request to `/api/ping` increments a counter. No request body. No response data. No logging.
+**Technical details**: Vercel Analytics uses `@vercel/analytics` package to send anonymous page view events. No custom tracking code, no databases, no API endpoints.
 
-**Open source**: You can review the complete analytics implementation:
-- Client-side: `src/taskpane/analytics.js` - The code that sends the ping
-- Server-side: `api/ping.js` or `api/ping-persistent.js` - The code that increments the counter
-- All code is visible and auditable on GitHub
+**Open source**: You can review the implementation:
+- Client-side: `src/taskpane/taskpane.js` - Contains `import { inject } from '@vercel/analytics'`
+- Vercel Analytics documentation: https://vercel.com/docs/analytics
 
-**What we get**: Just a number. Example: "ClearSend has been loaded 5,423 times total." We cannot know:
-- Who loaded it (no user identification)
-- When they loaded it (no timestamps stored)
-- Where they are (no IP/location tracking)
-- What they did (no activity tracking)
+**What we get**: Anonymous page view counts visible in Vercel dashboard. We cannot know:
+- Who visited (no user identification)
+- Email addresses or personal data (never transmitted)
+- Specific user behavior (just page loads)
 
 **Comparison to typical analytics**: Most analytics tools (Google Analytics, Mixpanel, etc.) collect:
 - User IDs and sessions
@@ -66,7 +61,7 @@ ClearSend is designed with privacy as its foundation. All email processing happe
 - User behavior flows
 - Device and browser details
 
-**ClearSend collects**: A counter increment. That's all.
+**Vercel Analytics on free tier**: Anonymous page views. No cookies. Privacy-friendly.
 
 ## How It Works
 
@@ -110,7 +105,7 @@ ClearSend stores configuration data **locally on your device only** using Office
 
 ## Third-Party Services
 
-### Vercel (Hosting and Optional Analytics)
+### Vercel (Hosting and Analytics)
 
 **Static Hosting:**
 - We use Vercel to host static files (HTML, CSS, JavaScript)
@@ -119,14 +114,15 @@ ClearSend stores configuration data **locally on your device only** using Office
 - Vercel may collect standard web access logs (IP address, browser type) when downloading the add-in files
 - No email addresses, recipient data, or personal information is ever sent to Vercel
 
-**Optional Analytics (if enabled):**
-- If analytics are enabled, a Vercel serverless function increments a usage counter
-- The counter request contains no personal data, user IDs, or identifying information
-- Vercel's standard HTTP logs may capture IP addresses, but we do not store or access them
-- The analytics endpoint only returns `{"ok": true}` - no data is sent back to the client
-- You can disable analytics entirely (see "Minimal Usage Analytics" section above)
+**Vercel Analytics:**
+- Vercel Analytics tracks anonymous page views for the hosted version
+- No cookies on free tier - privacy-friendly by design
+- No personal data, user IDs, or identifying information collected
+- Only aggregate page view counts visible in Vercel dashboard
+- Self-hosted/local installations are NOT tracked
 
 Read Vercel's privacy policy: https://vercel.com/legal/privacy-policy
+Read Vercel Analytics documentation: https://vercel.com/docs/analytics/privacy-policy
 
 ### Microsoft Office
 
@@ -176,16 +172,13 @@ You have complete control over your data because we never access it. You can:
 ## Frequently Asked Questions
 
 ### Q: Do I need to consent to analytics?
-**A:** Analytics are currently disabled by default in the codebase. If we enable them in a future release, we'll make it clear and give you the option to opt out. Since the analytics collect no personal data (just a counter), no formal consent is required under GDPR/CCPA.
+**A:** Analytics are enabled on the Vercel-hosted version (manifest.prod.xml). Since Vercel Analytics collects no personal data (just anonymous page views, no cookies on free tier), no formal consent is required under GDPR/CCPA.
 
 ### Q: Can you see who I am if I use the add-in?
-**A:** No. The analytics (if enabled) only increment a counter. We cannot identify you, your organization, your location, or any personal details.
+**A:** No. Vercel Analytics only tracks anonymous page views. We cannot identify you, your organization, your location, or any personal details.
 
 ### Q: What if I don't want any analytics at all?
-**A:** You have three options:
-1. Don't enable analytics in the first place (they're disabled by default)
-2. Set `ENABLED: false` in `src/taskpane/analytics.js`
-3. Build and host your own version without the analytics code
+**A:** Clone the repository and self-host locally using manifest.xml. Local installations are NOT tracked by Vercel Analytics - only the production Vercel-hosted version sends anonymous page views.
 
 ### Q: Is this GDPR compliant?
 **A:** Yes. We collect no personal data, so GDPR's strict requirements don't apply. Anonymous usage counting is explicitly permitted under GDPR.
@@ -202,9 +195,9 @@ You have complete control over your data because we never access it. You can:
 
 ### Q: How can I verify these privacy claims?
 **A:** Review the source code on GitHub:
-- `src/taskpane/analytics.js` - See the client-side code that sends the ping
-- `api/ping.js` or `api/ping-persistent.js` - See the server-side code that increments the counter
+- `src/taskpane/taskpane.js` - See the Vercel Analytics integration (just `inject()` call)
 - Search the codebase for any network requests - you'll see none that transmit email data
+- Vercel Analytics source code is open: https://github.com/vercel/analytics
 
 ### Q: What if I find a privacy violation?
 **A:** Please report it immediately:
@@ -213,7 +206,7 @@ You have complete control over your data because we never access it. You can:
 - We take privacy seriously and will address any concerns promptly
 
 ### Q: Can analytics be used to track my email recipients?
-**A:** No. Absolutely not. The analytics code is completely separate from the email processing code. Email recipients are NEVER transmitted anywhere. The analytics only sends an empty POST request to increment a counter.
+**A:** No. Absolutely not. Vercel Analytics only tracks page views. Email recipients are NEVER transmitted anywhere - all email processing happens 100% locally in your browser.
 
 ---
 

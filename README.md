@@ -123,48 +123,32 @@ All email processing logic runs **entirely in your browser/Outlook client** usin
 - Email addresses remain in Outlook's context only
 - Settings stored in Office.js roaming settings (synced by Microsoft across your devices)
 
-## 📊 Analytics (Optional)
+## 📊 Analytics
 
-**To help improve ClearSend**, we offer an **optional, privacy-safe usage counter** that tracks only how many times the add-in is loaded.
+**To help improve ClearSend**, we use **Vercel Analytics** - a privacy-friendly page view tracker for the hosted version only.
 
 ### What This Means
 
-✅ **What IS collected** (if you enable analytics):
-- A single anonymous counter increment when the add-in loads
-- That's it. Just a number: "The add-in was loaded X times total"
+✅ **What IS collected** (Vercel-hosted version only):
+- Anonymous page views when you load the add-in
+- No cookies, no tracking, no personal data
 
 ❌ **What is NEVER collected**:
 - No user identification (names, emails, IDs)
-- No IP addresses stored
 - No email addresses or recipient data
-- No browser fingerprinting or device information
-- No timestamps or usage patterns
-- No cookies or session tracking
+- No cookies or persistent tracking
+- No personal information of any kind
 
-### Why Analytics?
+### Local Installations = Zero Tracking
 
-This helps us understand:
-- Approximate usage volume (e.g., "~1,000 people use this")
-- Whether to prioritize new features
-- If the project should continue being maintained
+- **Vercel-hosted** (manifest.prod.xml) → Anonymous page views tracked
+- **Self-hosted/local** (manifest.xml) → No tracking at all
 
-**Nothing more.** We can't see who you are, where you are, or what you're doing with the add-in.
+This gives privacy-conscious users a clear choice: clone the repo and self-host for zero tracking, or use the convenient Vercel version with minimal anonymous analytics.
 
-### How to Enable
+**All tracking is GDPR/CCPA compliant** and uses Vercel's privacy-friendly analytics (no cookies on free tier).
 
-Analytics is currently **disabled by default**. To enable it, see `ANALYTICS_README.md` for three privacy-respecting options:
-
-1. **Vercel Web Analytics** - Zero code (just enable in dashboard)
-2. **Simple Counter** - Minimal implementation (resets periodically)
-3. **Persistent Counter** - Best accuracy (uses Vercel KV database)
-
-All options are **100% GDPR/CCPA compliant** and collect zero personal data.
-
-For complete implementation details, see:
-- `ANALYTICS_README.md` - Quick start guide
-- `ANALYTICS_IMPLEMENTATION.md` - Detailed setup
-- `INTEGRATION_EXAMPLE.md` - Code examples
-- `PRIVACY.md` - Full privacy disclosure
+For complete privacy details, see: `PRIVACY.md`
 
 
 ## 📋 Project Structure
@@ -174,28 +158,22 @@ ClearSend/
 ├── src/
 │   ├── taskpane/
 │   │   ├── taskpane.html          # Main UI
-│   │   ├── taskpane.js            # UI logic and Office.js integration
+│   │   ├── taskpane.js            # UI logic and Office.js integration (includes Vercel Analytics)
 │   │   ├── processors.js          # Client-side processing library
-│   │   ├── analytics.js           # Privacy-safe usage tracking (optional)
 │   │   └── clearsend.css          # Fluent UI styles
 │   └── commands/
 │       ├── commands.html          # Command function UI
 │       └── commands.js            # Quick Clean ribbon action
-├── api/
-│   ├── ping.js                    # Simple usage counter endpoint (optional)
-│   └── ping-persistent.js         # Persistent counter with Vercel KV (optional)
-├── scripts/
-│   └── view-usage.js              # Utility to view usage statistics
 ├── assets/                        # Icons and images
 ├── manifest.xml                   # Development manifest (localhost)
 ├── manifest.prod.xml              # Production manifest (Vercel)
 ├── webpack.config.js              # Build configuration
 ├── vercel.json                    # Vercel deployment config
 ├── package.json                   # Dependencies
-├── ANALYTICS_README.md            # Analytics quick start guide
-├── ANALYTICS_IMPLEMENTATION.md    # Detailed analytics setup
-├── INTEGRATION_EXAMPLE.md         # Code integration examples
-└── PRIVACY.md                     # Privacy policy (includes analytics disclosure)
+├── ANALYTICS_README.md            # Analytics documentation (for reference)
+├── ANALYTICS_IMPLEMENTATION.md    # Analytics implementation details (for reference)
+├── INTEGRATION_EXAMPLE.md         # Code examples (for reference)
+└── PRIVACY.md                     # Privacy policy
 ```
 
 
