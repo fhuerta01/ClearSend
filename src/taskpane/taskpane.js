@@ -10,6 +10,9 @@
 
 /* global Office, document, window, setTimeout, setInterval, clearTimeout, clearInterval, Blob, URL */
 
+// Privacy-safe analytics (optional - only counts add-in loads)
+import { initAnalytics } from './analytics.js';
+
 /**
  * Configuration Constants
  * Centralized configuration to avoid magic numbers and improve maintainability
@@ -105,6 +108,9 @@ const ClearSend = {
 // Initialize ClearSend when Office is ready
 Office.onReady((info) => {
   if (info.host === Office.HostType.Outlook) {
+    // Initialize privacy-safe analytics (optional - just counts usage)
+    initAnalytics();
+
     initializeClearSend();
     // Setup cleanup handler to prevent memory leaks
     setupCleanupHandlers();
