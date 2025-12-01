@@ -32,7 +32,7 @@ ClearSend is a free, open-source Microsoft Outlook add-in that helps you manage 
 - ✅ **Zero Data Transmission** - Your email addresses NEVER leave your device
 - ✅ **No Servers** - No backend servers process or store your data
 - ✅ **No Cloud Storage** - Nothing is uploaded or synchronized to any cloud service
-- ✅ **No Tracking** - No analytics, cookies, or telemetry
+- ✅ **Minimal Analytics** - Optional anonymous usage counter only (no personal data, no tracking)
 - ✅ **Open Source** - Verify our claims by reviewing the complete source code
 
 **Your email addresses remain exclusively in your Outlook application. Period.**
@@ -118,10 +118,53 @@ All email processing logic runs **entirely in your browser/Outlook client** usin
 
 **Technical Implementation:**
 - Pure JavaScript functions execute in your browser's memory
-- No network requests to external APIs
+- No network requests to external APIs for email processing
 - No data serialization or transmission
 - Email addresses remain in Outlook's context only
 - Settings stored in Office.js roaming settings (synced by Microsoft across your devices)
+
+## 📊 Analytics (Optional)
+
+**To help improve ClearSend**, we offer an **optional, privacy-safe usage counter** that tracks only how many times the add-in is loaded.
+
+### What This Means
+
+✅ **What IS collected** (if you enable analytics):
+- A single anonymous counter increment when the add-in loads
+- That's it. Just a number: "The add-in was loaded X times total"
+
+❌ **What is NEVER collected**:
+- No user identification (names, emails, IDs)
+- No IP addresses stored
+- No email addresses or recipient data
+- No browser fingerprinting or device information
+- No timestamps or usage patterns
+- No cookies or session tracking
+
+### Why Analytics?
+
+This helps us understand:
+- Approximate usage volume (e.g., "~1,000 people use this")
+- Whether to prioritize new features
+- If the project should continue being maintained
+
+**Nothing more.** We can't see who you are, where you are, or what you're doing with the add-in.
+
+### How to Enable
+
+Analytics is currently **disabled by default**. To enable it, see `ANALYTICS_README.md` for three privacy-respecting options:
+
+1. **Vercel Web Analytics** - Zero code (just enable in dashboard)
+2. **Simple Counter** - Minimal implementation (resets periodically)
+3. **Persistent Counter** - Best accuracy (uses Vercel KV database)
+
+All options are **100% GDPR/CCPA compliant** and collect zero personal data.
+
+For complete implementation details, see:
+- `ANALYTICS_README.md` - Quick start guide
+- `ANALYTICS_IMPLEMENTATION.md` - Detailed setup
+- `INTEGRATION_EXAMPLE.md` - Code examples
+- `PRIVACY.md` - Full privacy disclosure
 
 
 ## 📋 Project Structure
@@ -133,17 +176,26 @@ ClearSend/
 │   │   ├── taskpane.html          # Main UI
 │   │   ├── taskpane.js            # UI logic and Office.js integration
 │   │   ├── processors.js          # Client-side processing library
+│   │   ├── analytics.js           # Privacy-safe usage tracking (optional)
 │   │   └── clearsend.css          # Fluent UI styles
 │   └── commands/
 │       ├── commands.html          # Command function UI
 │       └── commands.js            # Quick Clean ribbon action
+├── api/
+│   ├── ping.js                    # Simple usage counter endpoint (optional)
+│   └── ping-persistent.js         # Persistent counter with Vercel KV (optional)
+├── scripts/
+│   └── view-usage.js              # Utility to view usage statistics
 ├── assets/                        # Icons and images
-├── api/                           # Vercel serverless functions (static hosting only)
 ├── manifest.xml                   # Development manifest (localhost)
 ├── manifest.prod.xml              # Production manifest (Vercel)
 ├── webpack.config.js              # Build configuration
 ├── vercel.json                    # Vercel deployment config
-└── package.json                   # Dependencies
+├── package.json                   # Dependencies
+├── ANALYTICS_README.md            # Analytics quick start guide
+├── ANALYTICS_IMPLEMENTATION.md    # Detailed analytics setup
+├── INTEGRATION_EXAMPLE.md         # Code integration examples
+└── PRIVACY.md                     # Privacy policy (includes analytics disclosure)
 ```
 
 

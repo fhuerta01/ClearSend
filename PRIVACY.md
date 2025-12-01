@@ -10,18 +10,63 @@ ClearSend is designed with privacy as its foundation. All email processing happe
 
 ## What We Collect
 
+### Email and Personal Data
+
 **Absolutely Nothing.**
 
 - ❌ No email addresses
 - ❌ No recipient data
 - ❌ No personal information
-- ❌ No usage analytics
 - ❌ No tracking cookies
-- ❌ No telemetry data
 - ❌ No diagnostics
 - ❌ No logs
 
-**We cannot access your data because it never reaches us.**
+**We cannot access your email data because it never reaches us.**
+
+### Minimal Usage Analytics (Optional)
+
+**Only if enabled**: We collect a single anonymous count of add-in loads.
+
+**What IS collected** (if analytics enabled):
+- ✅ A simple counter increment when the add-in loads
+- That's it. Just a number.
+
+**What is NOT collected** (even with analytics):
+- ❌ No user identification (no names, emails, IDs)
+- ❌ No IP addresses stored
+- ❌ No timestamps or usage patterns
+- ❌ No email addresses or recipient data
+- ❌ No browser fingerprinting
+- ❌ No device information
+- ❌ No location data
+- ❌ No cookies or session tracking
+
+**Why**: This helps us understand approximate usage volume (e.g., "~1,000 people use this") for development prioritization. Nothing more.
+
+**How to disable**: Analytics can be disabled entirely in the source code by setting `ENABLED: false` in `src/taskpane/analytics.js`, or by simply not calling `initAnalytics()`.
+
+**Technical details**: A single POST request to `/api/ping` increments a counter. No request body. No response data. No logging.
+
+**Open source**: You can review the complete analytics implementation:
+- Client-side: `src/taskpane/analytics.js` - The code that sends the ping
+- Server-side: `api/ping.js` or `api/ping-persistent.js` - The code that increments the counter
+- All code is visible and auditable on GitHub
+
+**What we get**: Just a number. Example: "ClearSend has been loaded 5,423 times total." We cannot know:
+- Who loaded it (no user identification)
+- When they loaded it (no timestamps stored)
+- Where they are (no IP/location tracking)
+- What they did (no activity tracking)
+
+**Comparison to typical analytics**: Most analytics tools (Google Analytics, Mixpanel, etc.) collect:
+- User IDs and sessions
+- IP addresses and geolocation
+- Browser fingerprints
+- Page visit timestamps
+- User behavior flows
+- Device and browser details
+
+**ClearSend collects**: A counter increment. That's all.
 
 ## How It Works
 
@@ -65,14 +110,23 @@ ClearSend stores configuration data **locally on your device only** using Office
 
 ## Third-Party Services
 
-### Vercel (Hosting)
+### Vercel (Hosting and Optional Analytics)
 
-- We use Vercel **only** to host static files (HTML, CSS, JavaScript)
+**Static Hosting:**
+- We use Vercel to host static files (HTML, CSS, JavaScript)
 - Your browser downloads these files once when the add-in loads
 - **Your email data NEVER touches Vercel servers** - processing happens locally in your browser
 - Vercel may collect standard web access logs (IP address, browser type) when downloading the add-in files
 - No email addresses, recipient data, or personal information is ever sent to Vercel
-- Read Vercel's privacy policy: https://vercel.com/legal/privacy-policy
+
+**Optional Analytics (if enabled):**
+- If analytics are enabled, a Vercel serverless function increments a usage counter
+- The counter request contains no personal data, user IDs, or identifying information
+- Vercel's standard HTTP logs may capture IP addresses, but we do not store or access them
+- The analytics endpoint only returns `{"ok": true}` - no data is sent back to the client
+- You can disable analytics entirely (see "Minimal Usage Analytics" section above)
+
+Read Vercel's privacy policy: https://vercel.com/legal/privacy-policy
 
 ### Microsoft Office
 
@@ -115,6 +169,51 @@ You have complete control over your data because we never access it. You can:
 - Uninstall the add-in at any time
 - Clear local settings through Office settings
 - Review all source code to verify our claims
+- Disable analytics (if enabled) by modifying the source code
+
+---
+
+## Frequently Asked Questions
+
+### Q: Do I need to consent to analytics?
+**A:** Analytics are currently disabled by default in the codebase. If we enable them in a future release, we'll make it clear and give you the option to opt out. Since the analytics collect no personal data (just a counter), no formal consent is required under GDPR/CCPA.
+
+### Q: Can you see who I am if I use the add-in?
+**A:** No. The analytics (if enabled) only increment a counter. We cannot identify you, your organization, your location, or any personal details.
+
+### Q: What if I don't want any analytics at all?
+**A:** You have three options:
+1. Don't enable analytics in the first place (they're disabled by default)
+2. Set `ENABLED: false` in `src/taskpane/analytics.js`
+3. Build and host your own version without the analytics code
+
+### Q: Is this GDPR compliant?
+**A:** Yes. We collect no personal data, so GDPR's strict requirements don't apply. Anonymous usage counting is explicitly permitted under GDPR.
+
+### Q: Is this CCPA compliant?
+**A:** Yes. CCPA regulates "personal information." We collect no personal information, so CCPA doesn't apply.
+
+### Q: What about Vercel's HTTP logs?
+**A:** Like any web service, Vercel may log IP addresses in their standard HTTP access logs when you load the add-in files or ping the analytics endpoint. However:
+- We don't have access to Vercel's HTTP logs
+- We don't store or process IP addresses
+- Vercel's logs are temporary and used only for infrastructure purposes
+- This is standard for any web service (unavoidable when downloading files)
+
+### Q: How can I verify these privacy claims?
+**A:** Review the source code on GitHub:
+- `src/taskpane/analytics.js` - See the client-side code that sends the ping
+- `api/ping.js` or `api/ping-persistent.js` - See the server-side code that increments the counter
+- Search the codebase for any network requests - you'll see none that transmit email data
+
+### Q: What if I find a privacy violation?
+**A:** Please report it immediately:
+- Email: clear_send@outlook.com
+- GitHub Issues: https://github.com/fhuerta01/ClearSend/issues
+- We take privacy seriously and will address any concerns promptly
+
+### Q: Can analytics be used to track my email recipients?
+**A:** No. Absolutely not. The analytics code is completely separate from the email processing code. Email recipients are NEVER transmitted anywhere. The analytics only sends an empty POST request to increment a counter.
 
 ---
 
