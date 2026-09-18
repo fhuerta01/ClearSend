@@ -43,7 +43,10 @@ function normalizeSettings(value = {}) {
     stepOrder: [...new Set([...order, ...STEPS])],
     internalDomains,
     keepInvalid: value.keepInvalid === true,
-    analyticsEnabled: value.analyticsEnabled === true,
+    // Count by default only when no preference exists; preserve saved opt-outs.
+    analyticsEnabled: Object.prototype.hasOwnProperty.call(value, "analyticsEnabled")
+      ? value.analyticsEnabled === true
+      : true,
   };
 }
 function orderedSteps(settings) {

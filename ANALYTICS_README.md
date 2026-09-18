@@ -1,6 +1,6 @@
 # Aggregate usage counting
 
-This is the implementation's single setup guide. ClearSend uses a Vercel function plus Supabase **aggregate counters**, not Vercel Web Analytics. It is disabled by default; no Supabase project or production deployment is created by building the repository.
+This is the implementation's single setup guide. ClearSend uses a Vercel function plus Supabase **aggregate counters**, not Vercel Web Analytics. An unconfigured deployment sends no events. Once the operator enables production counting, the user preference defaults on if absent; saved opt-outs remain off. No Supabase project or production deployment is created by building the repository.
 
 ## What each metric means
 
@@ -37,9 +37,9 @@ Do not add outcome counters together as extra clicks. `process_click + quick_cle
 4. Use Vercel's Node 22 or 24 runtime, `npm run build`, output directory `dist`. Keep `api/events.js` at repository root. A static-only host does not run the counter API. Do not enable Vercel Web Analytics or a separate tracking script for this design.
 5. Review provider logging, backups, region and access policies. Keep raw request bodies out of logs. Add platform-level abuse controls for `/api/events`; a strict Origin check is useful for browsers, **not authentication against scripts**. Account for any provider metadata processing in your published policy.
 6. Deploy the reviewed branch, then verify with synthetic addresses in Outlook. This repository change alone does not enable production collection.
-7. Opt in under Configuration. Check the network request is exactly `POST /api/events` with `{"event":"process_click"}` and has no Cookie or Referer header. Successful writes return 204; storage failure returns 503. Confirm the database counter increment. A disabled endpoint also returns 204 without incrementing, so check the table as well.
+7. With no saved preference, counting starts automatically. Existing saved `false` preferences stay off; use **Configuration → Share aggregate usage counts** to change your choice. Check the network request is exactly `POST /api/events` with `{"event":"process_click"}` and has no Cookie or Referer header. Successful writes return 204; storage failure returns 503. Confirm the database counter increment. A disabled endpoint also returns 204 without incrementing, so check the table as well.
 
-The client requires an exact matching production origin, explicit user opt-in, and no DNT/GPC. Development builds and Vercel previews disable the public origin. The server separately rejects writes from preview deployments. No public secret is used as a pretend authentication mechanism.
+The client requires an exact matching production origin, an enabled usage preference (on by default only if absent), and no DNT/GPC. Development builds and Vercel previews disable the public origin. The server separately rejects writes from preview deployments. No public secret is used as a pretend authentication mechanism.
 
 ### Troubleshoot a 503 response
 
@@ -91,7 +91,7 @@ Network providers necessarily receive connection metadata. “Anonymous” descr
 
 ## Disable or remove
 
-- User: uncheck **Share anonymous action counts**. Defaults and Restore also turn it off.
+- User: uncheck **Share aggregate usage counts**. This stops subsequent events; Restore preserves the current choice. Saved opt-outs from earlier versions remain off because they cannot be distinguished from an explicitly disabled preference.
 - Operator: set `ANALYTICS_ENABLED=false` to stop database increments; redeploy the server configuration. Clear `CLEARSEND_ANALYTICS_ORIGIN` and rebuild to stop client requests too.
 - Local/self-hosted: leave all analytics configuration empty.
 

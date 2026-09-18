@@ -6,15 +6,16 @@ function createAnalytics({
   navigator = globalThis.navigator,
   fetch = globalThis.fetch,
 } = {}) {
-  let consent = enabled === true;
+  // Stay inactive until the caller has loaded the saved preference.
+  let countingEnabled = enabled === true;
   return {
     setEnabled(value) {
-      consent = value === true;
+      countingEnabled = value === true;
     },
     track(event) {
-      // Opt in, exact production origin, no previews, no DNT/GPC, no identifiers.
+      // Respect opt-out, exact production origin, DNT/GPC; no identifiers.
       if (
-        !consent ||
+        !countingEnabled ||
         !origin ||
         location?.origin !== origin ||
         !origin.startsWith("https://") ||

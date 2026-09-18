@@ -6,6 +6,7 @@ const vm = require("node:vm");
 const { createRequire } = require("node:module");
 const { JSDOM } = require("jsdom");
 const { officeMock } = require("./helpers.cjs");
+const { createAnalytics } = require("../src/shared/analytics");
 const tick = () => new Promise((resolve) => setImmediate(resolve));
 async function pane(t, lists, settings = {}) {
   const dom = new JSDOM(
@@ -34,12 +35,15 @@ async function pane(t, lists, settings = {}) {
     require: (name) =>
       name === "../shared/analytics"
         ? {
-            createAnalytics: () => ({
-              setEnabled() {},
-              track(event) {
-                events.push(event);
-              },
-            }),
+            createAnalytics: (options) =>
+              createAnalytics({
+                ...options,
+                location: dom.window.location,
+                navigator: dom.window.navigator,
+                fetch: async (_url, { body }) => {
+                  events.push(JSON.parse(body).event);
+                },
+              }),
           }
         : localRequire(name),
   };
@@ -55,6 +59,40 @@ async function pane(t, lists, settings = {}) {
     },
   };
 }
+test("new installs count opening and processing; opting out survives restore and reopening", async (t) => {
+  const lists = { to: ["a@example.com"], cc: [], bcc: [] };
+  const ui = await pane(t, lists);
+  assert.equal(ui.document.getElementById("analyticsCheck").checked, true);
+  assert.deepEqual(ui.events, ["pane_open"]);
+  await ui.click("checkCleanBtn");
+  assert.equal(ui.events.filter((event) => event === "process_click").length, 1);
+  await ui.click("analyticsCheck");
+  assert.equal(ui.values.clearSendSettings.analyticsEnabled, false);
+  const count = ui.events.length;
+  await ui.click("checkCleanBtn");
+  await ui.click("restoreDefaultsBtn");
+  assert.equal(ui.events.length, count);
+  assert.equal(ui.values.clearSendSettings.analyticsEnabled, false);
+  assert.equal(ui.document.getElementById("analyticsCheck").checked, false);
+  assert.match(ui.document.getElementById("usageCountsNotice").textContent, /counts are off/);
+  const reopened = await pane(t, lists, ui.values.clearSendSettings);
+  await reopened.click("checkCleanBtn");
+  assert.deepEqual(reopened.events, []);
+});
+test("restore preserves enabled counting and existing false preferences never emit an opening", async (t) => {
+  const lists = { to: [], cc: [], bcc: [] };
+  const enabled = await pane(t, lists);
+  await enabled.click("restoreDefaultsBtn");
+  assert.equal(enabled.values.clearSendSettings.analyticsEnabled, true);
+  await enabled.click("checkCleanBtn");
+  assert.ok(enabled.events.includes("process_click"));
+  const disabled = await pane(t, lists, { analyticsEnabled: false });
+  assert.deepEqual(disabled.events, []);
+  await disabled.click("analyticsCheck");
+  assert.equal(disabled.values.clearSendSettings.analyticsEnabled, true);
+  await disabled.click("checkCleanBtn");
+  assert.ok(disabled.events.includes("process_click"));
+});
 test("single click processes once, ordering changes can be undone", async (t) => {
   const original = { to: ["Z <z@example.com>", "A <a@example.com>"], cc: [], bcc: [] };
   const ui = await pane(t, original);

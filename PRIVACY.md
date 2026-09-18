@@ -16,13 +16,13 @@ Updated: 18 September 2026. This policy describes the source implementation in t
 | Preferences and internal domains | Office.js RoamingSettings in your Microsoft mailbox; Microsoft can sync these between clients. | Restore default settings in Configuration. |
 | Saved invalid addresses | Optional, off by default; stored with Microsoft roaming settings, never in ClearSend/Supabase. | Up to 100 entries and 12 KB JSON; delete individual entries, use Delete saved invalid addresses, or Restore. Turning the feature off does not delete existing entries. |
 | CSV and clipboard | Explicit user export/copy. | Controlled by your device and your subsequent use of the file/clipboard. |
-| Aggregate usage | Optional fixed event names sent to the app's own `/api/events` endpoint and counted in Supabase. | Only UTC day, event name and count; no event-level history. See below. |
+| Aggregate usage | Enabled by default when no preference is saved on a configured production deployment; fixed event names sent to the app's own `/api/events` endpoint and counted in Supabase. | Only UTC day, event name and count; no event-level history. See below. |
 
 Office requires `ReadWriteItem` permission to edit recipients. That permission is broader than the functions ClearSend uses. The implementation does not read message bodies/attachments or obtain access tokens. RoamingSettings is not a secrets vault; it is part of your Microsoft environment. [Microsoft reference](https://learn.microsoft.com/en-us/javascript/api/outlook/office.roamingsettings?view=outlook-js-preview).
 
 ## Optional aggregate analytics
 
-There are two gates: the deployment owner must enable counting, and the user must opt in under **Configuration → Share anonymous action counts**. It defaults off, respects Do Not Track and Global Privacy Control, and is disabled in local development and preview deployments. Opting out stops subsequent events; already received aggregate counts cannot be tied back to you or individually deleted.
+The deployment owner must configure and enable counting. On that production deployment, usage counts are enabled by default when no preference is saved. Turn them off under **Configuration → Share aggregate usage counts**. Existing saved `false` preferences remain off, including preferences saved by earlier versions; Restore preserves this choice. This is an opt-out setting, not a consent prompt. Counting respects Do Not Track and Global Privacy Control and is disabled in local development and preview deployments. Opting out stops subsequent events; already received aggregate counts cannot be tied back to you or individually deleted.
 
 The browser sends only a fixed action name such as `process_click`. It does not send Outlook-derived properties, URLs, referrers, recipient counts, recipient hashes, account data or error text. Requests omit cookies and referrers. There are no analytics user IDs, session IDs, persistent device identifiers or fingerprint hashes. The application does not load Vercel Web Analytics.
 
@@ -42,7 +42,7 @@ When counter storage fails, ClearSend writes a fixed technical error code to ser
 
 ## Your choices
 
-- Leave usage counting disabled or turn it off at any time.
+- Turn usage counting off at any time in Configuration. Saved disabled preferences remain off after upgrades and Restore.
 - Disable saving invalid addresses and delete previously saved entries separately.
 - Use a self-hosted build with analytics configuration empty for no ClearSend analytics requests.
 - Audit the open-source code. Hosted administrators control future code updates, so the deployed revision is part of the trust boundary.

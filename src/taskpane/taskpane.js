@@ -89,7 +89,14 @@ function syncSettingsUI() {
   $("analyticsCheck").disabled = !__ANALYTICS_ORIGIN__ || location.origin !== __ANALYTICS_ORIGIN__;
   $("analyticsAvailability").textContent = $("analyticsCheck").disabled
     ? "Usage counting is disabled for this installation."
-    : "Optional: share action counts only. No Outlook data or user identifiers.";
+    : "Share action counts only. No Outlook data or user identifiers.";
+  $("usageCountsNotice").textContent = $("analyticsCheck").disabled
+    ? "Usage counting is unavailable for this installation."
+    : navigator.doNotTrack === "1" || navigator.globalPrivacyControl === true
+      ? "Usage counting is blocked by your browser privacy preference."
+      : state.settings.analyticsEnabled
+        ? "Aggregate usage counts are on. You can turn them off in Configuration. No recipient or message data is included."
+        : "Usage counts are off. You can change this in Configuration.";
   $("processingOptionsSummary").textContent =
     state.settings.stepOrder
       .filter((step) =>
@@ -422,6 +429,7 @@ function setupHandlers() {
       state.settings.analyticsEnabled = false;
       $("analyticsCheck").checked = false;
     }
+    syncSettingsUI();
   });
   bind("clearSavedInvalidBtn", "click", async () => {
     state.savedInvalid = [];
@@ -429,14 +437,13 @@ function setupHandlers() {
     await refresh();
   });
   bind("restoreDefaultsBtn", "click", async () => {
-    state.settings = normalizeSettings();
+    state.settings = normalizeSettings({ analyticsEnabled: state.settings.analyticsEnabled });
     state.savedInvalid = [];
-    analytics.setEnabled(false);
     await persist();
     syncSettingsUI();
     renderDomains();
     await refresh();
-    toast("Defaults restored; saved invalid addresses deleted.");
+    toast("Defaults restored; saved invalid addresses deleted. Usage count preference kept.");
   });
   document.addEventListener("keydown", (event) => {
     if (!event.ctrlKey || !event.altKey || event.repeat) return;

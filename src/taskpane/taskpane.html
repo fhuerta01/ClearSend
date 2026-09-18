@@ -141,6 +141,8 @@
                 <div id="savedInvalidContent" style="display: none;"></div>
             </section>
 
+            <p id="usageCountsNotice" class="privacy-note"></p>
+
             <!-- Progress Bar -->
             <div class="progress-container" id="progressContainer" style="display: none;">
                 <div class="progress-bar">
@@ -241,9 +243,9 @@
             <section class="config-section" aria-label="Privacy">
                 <h3>Privacy and usage counts</h3>
                 <p class="privacy-note">ClearSend processes recipients inside Outlook. No email addresses, names, message content or internal domains are sent to ClearSend hosting or analytics services. Microsoft handles your mailbox and synchronizes saved preferences and optional invalid-address lists.</p>
-                <label class="privacy-note"><input type="checkbox" id="analyticsCheck" aria-label="Share anonymous action counts" /> Share anonymous action counts</label>
+                <label class="privacy-note"><input type="checkbox" id="analyticsCheck" aria-label="Share aggregate usage counts" /> Share aggregate usage counts</label>
                 <p id="analyticsAvailability" class="privacy-note"></p>
-                <p class="privacy-note">Counts contain only action names and aggregate UTC days. Hosting providers receive connection metadata. No cookies or user identifiers are used by ClearSend analytics.</p>
+                <p class="privacy-note">Enabled by default when no preference has been saved. You can turn this off at any time. Counts contain only action names and aggregate UTC days. Hosting providers receive connection metadata; ClearSend does not use it to identify people or sessions. No cookies or user identifiers are used by ClearSend analytics.</p>
                 <a href="https://github.com/fhuerta01/ClearSend/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy details</a>
                 <button type="button" id="clearSavedInvalidBtn" class="config-item-btn">Delete saved invalid addresses</button>
             </section>

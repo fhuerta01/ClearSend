@@ -90,7 +90,7 @@ test("typo hints never flag exact common domains or alter local parts", () => {
   assert.equal(checkForTypos("a@constructor").hasTypo, false);
   assert.equal(extractEmail("Name <A@example.com>  "), "A@example.com");
 });
-test("malformed settings are normalized and analytics defaults off", () => {
+test("malformed settings are normalized and malformed analytics preferences stay off", () => {
   const settings = normalizeSettings({
     enabledSteps: "removeExternal",
     stepOrder: ["unknown", "sort", "sort"],
@@ -100,6 +100,13 @@ test("malformed settings are normalized and analytics defaults off", () => {
   assert.deepEqual(settings.internalDomains, ["example.com"]);
   assert.equal(settings.analyticsEnabled, false);
   assert.equal(new Set(settings.stepOrder).size, settings.stepOrder.length);
+});
+test("usage counts default on only when no saved preference exists", () => {
+  assert.equal(normalizeSettings().analyticsEnabled, true);
+  assert.equal(normalizeSettings({ enabledSteps: ["sort"] }).analyticsEnabled, true);
+  assert.equal(normalizeSettings({ analyticsEnabled: false }).analyticsEnabled, false);
+  assert.equal(normalizeSettings({ analyticsEnabled: true }).analyticsEnabled, true);
+  assert.equal(normalizeSettings({ analyticsEnabled: null }).analyticsEnabled, false);
 });
 test("saved invalid lists are deduplicated and size bounded", () => {
   assert.deepEqual(boundedInvalid(["bad", "BAD", null]), ["bad"]);

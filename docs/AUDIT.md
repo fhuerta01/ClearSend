@@ -41,7 +41,7 @@ Son métricas del repositorio y no permiten saber cuántas personas usan el comp
 
 Se ha sustituido Vercel Web Analytics por un endpoint de Vercel que solo acepta nombres de acción predeterminados. Supabase recibe ese nombre y almacena un contador agregado por día UTC y acción. No almacena destinatarios, dominios, identificadores, IP, user-agent, hashes de personas, sesiones ni filas de eventos individuales.
 
-La preferencia del usuario está desactivada por defecto. Se requieren tanto activación del despliegue como consentimiento del usuario; DNT/GPC, desarrollo local y previews impiden el envío. No hay reintentos que puedan duplicar una entrega incierta. Los incrementos son atómicos, pero los contadores no equivalen al total exacto de uso ni a usuarios únicos: opt-outs, fallos de red y tráfico automatizado pueden sesgar las cifras.
+La preferencia está activada por defecto cuando no existe una preferencia guardada y el despliegue de producción está configurado. Las preferencias desactivadas ya guardadas se conservan, también al restaurar ajustes. Se informa en el panel y se puede desactivar en Configuración; no se presenta como consentimiento. DNT/GPC, desarrollo local y previews impiden el envío. No hay reintentos que puedan duplicar una entrega incierta. Los incrementos son atómicos, pero los contadores no equivalen al total exacto de uso ni a usuarios únicos: opt-outs, fallos de red y tráfico automatizado pueden sesgar las cifras.
 
 La aplicación no registra metadatos de conexión ni los copia a Supabase; Vercel y otros proveedores sí reciben metadatos técnicos al atender HTTP. Por ello no se afirma anonimato absoluto de toda la infraestructura. Tampoco se afirma cumplimiento legal automático.
 

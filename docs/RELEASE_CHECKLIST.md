@@ -12,7 +12,7 @@ This branch has automated coverage with mocked Office.js and local PostgreSQL. R
 - Test panel at 320 px and keyboard navigation. Verify drag reordering also has button/keyboard alternatives.
 - Deploy to a preview with analytics disabled. Inspect requests to confirm no Vercel Analytics script or counter events.
 - Before enabling production counting: apply the reviewed migration to the dedicated Supabase project, check grants, configure server-only secrets, set exact origins, review provider logging/backups and add platform abuse controls.
-- On production with synthetic addresses: test opt-in, opt-out, DNT/GPC and network failure. Inspect payloads; only a fixed event name is allowed. Confirm the SQL count increments and no recipient/user metadata is stored.
+- On production with synthetic addresses: test counting on a fresh installation, preservation of saved opt-outs across upgrades/Restore, DNT/GPC and network failure. Inspect payloads; only a fixed event name is allowed. Confirm the SQL count increments and no recipient/user metadata is stored.
 - Schedule aggregate expiry if retention must run during inactivity. Confirm README, privacy text and hosted revision agree.
 
 Do not infer live Outlook compatibility from XML schema validation alone. Do not infer live analytics activation from a passing local test or a 204 from a disabled endpoint.

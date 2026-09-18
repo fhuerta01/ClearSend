@@ -29,7 +29,7 @@ test("analytics sends only the event name, with no cookies or referrer", () => {
   assert.equal(calls[0][1].credentials, "omit");
   assert.equal(calls[0][1].referrerPolicy, "no-referrer");
 });
-test("no events without opt in or on local/preview origins or DNT/GPC", () => {
+test("no events when disabled or on local/preview origins or DNT/GPC", () => {
   for (const extra of [
     { enabled: false },
     { origin: "" },
