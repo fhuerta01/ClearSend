@@ -28,9 +28,12 @@ jobs:
           path: dist/
   database:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        postgres-version: [16, 17]
     services:
       postgres:
-        image: postgres:16-alpine
+        image: postgres:${{ matrix.postgres-version }}-alpine
         env:
           POSTGRES_PASSWORD: local-test
         ports: ['5432:5432']
@@ -38,12 +41,13 @@ jobs:
           --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
     env:
       PGHOST: localhost
+      PGDATABASE: postgres
       PGUSER: postgres
       PGPASSWORD: local-test
     steps:
       - uses: actions/checkout@v4
       - name: Verify migration, permissions and counters
         run: |
-          psql -v ON_ERROR_STOP=1 -c 'create role anon; create role authenticated; create role service_role;'
-          psql -v ON_ERROR_STOP=1 -f supabase/migrations/202609180001_usage_counters.sql
+          psql -v ON_ERROR_STOP=1 -f tests/database-setup.sql
+          PGUSER=clearsend_migrator psql -v ON_ERROR_STOP=1 -f supabase/migrations/202609180001_usage_counters.sql
           psql -v ON_ERROR_STOP=1 -f tests/database.sql

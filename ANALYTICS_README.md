@@ -21,7 +21,7 @@ Do not add outcome counters together as extra clicks. `process_click + quick_cle
 
 ## Deploy with Supabase
 
-1. Create or choose a **dedicated ClearSend analytics Supabase project**. Run `supabase/migrations/202609180001_usage_counters.sql` once through your migration process or Supabase SQL editor as the project administrator. It creates the counter table, a restricted writer role and an RPC function. Do not run the test role-creation commands in an existing Supabase project.
+1. Create or choose a **dedicated ClearSend analytics Supabase project** (PostgreSQL 16 or newer). Run `supabase/migrations/202609180001_usage_counters.sql` once through your migration process or Supabase SQL editor as the project administrator (`postgres`). It creates the counter table, a restricted writer role and an RPC function. Do not run the test role-creation commands in an existing Supabase project. If the original script failed with `must be able to SET ROLE "clearsend_counter_writer"`, run `ROLLBACK;` and then execute the entire updated migration. The failed transaction does not leave its table or role behind. An already successful installation does not need to rerun this migration.
 2. Inspect the table and RPC grants. `anon` and `authenticated` must have neither table access nor RPC execution. Only the server-side `service_role` key calls `increment_usage_counter`. Never expose that key in a browser variable or a `VITE_`/`NEXT_PUBLIC_` variable.
 3. In the Vercel project's **Production** environment, set:
 
@@ -80,6 +80,6 @@ Network providers necessarily receive connection metadata. “Anonymous” descr
 
 ## Verification
 
-`npm test` checks the client gates, closed event vocabulary, payload exclusions and API failure behavior. CI runs `tests/database.sql` against a disposable PostgreSQL service to check permissions, incrementing, retention and rejected event names. Use the [manual release checklist](docs/RELEASE_CHECKLIST.md) for a real Outlook/Vercel deployment.
+`npm test` checks the client gates, closed event vocabulary, payload exclusions and API failure behavior. CI applies the migration as a non-superuser with role-creation privileges on disposable PostgreSQL 16 and 17 services, then runs `tests/database.sql` to check restricted ownership, removal of temporary privileges, RLS, permissions, incrementing, retention and rejected event names. Use the [manual release checklist](docs/RELEASE_CHECKLIST.md) for a real Outlook/Vercel deployment.
 
 References: [Supabase functions and execution permissions](https://supabase.com/docs/guides/database/functions), [row-level security](https://supabase.com/docs/guides/database/postgres/row-level-security). Vercel Web Analytics uses visitor hashing and additional visit dimensions, which is why it is not used for this aggregate-only contract: [Vercel's description](https://vercel.com/docs/analytics/privacy-policy).

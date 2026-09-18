@@ -40,10 +40,14 @@ begin
   delete from public.usage_counters where day < today - 89;
 end;
 $$;
--- Ownership transfer requires CREATE on the containing schema, revoked immediately.
+-- Apply function permissions while the migration administrator still owns it.
+revoke all on function public.increment_usage_counter(text) from public, anon, authenticated;
+grant execute on function public.increment_usage_counter(text) to service_role;
+-- PostgreSQL 16+ grants role creators ADMIN but not SET automatically.
+-- Temporarily allow the ownership transfer, including in Supabase's SQL editor.
+grant clearsend_counter_writer to current_user with inherit false, set true;
 grant create on schema public to clearsend_counter_writer;
 alter function public.increment_usage_counter(text) owner to clearsend_counter_writer;
 revoke create on schema public from clearsend_counter_writer;
-revoke all on function public.increment_usage_counter(text) from public, anon, authenticated;
-grant execute on function public.increment_usage_counter(text) to service_role;
+revoke set option for clearsend_counter_writer from current_user;
 commit;

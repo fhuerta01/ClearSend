@@ -1,9 +1,25 @@
 -- Run in an isolated PostgreSQL database after the migration.
 do $$
 begin
+  if (select rolsuper from pg_roles where rolname = 'clearsend_migrator') then
+    raise exception 'Migration regression must use a non-superuser';
+  end if;
+  if (select pg_get_userbyid(proowner) from pg_proc
+      where oid = 'public.increment_usage_counter(text)'::regprocedure) <> 'clearsend_counter_writer' then
+    raise exception 'Counter function must have a restricted owner';
+  end if;
+  if has_schema_privilege('clearsend_counter_writer', 'public', 'CREATE') or
+     pg_has_role('clearsend_migrator', 'clearsend_counter_writer', 'SET') or
+     pg_has_role('clearsend_migrator', 'clearsend_counter_writer', 'USAGE') then
+    raise exception 'Temporary ownership-transfer privileges must be revoked';
+  end if;
+  if not (select relrowsecurity from pg_class where oid = 'public.usage_counters'::regclass) then
+    raise exception 'Row level security must remain enabled';
+  end if;
   if has_table_privilege('anon', 'public.usage_counters', 'SELECT') or
      has_table_privilege('authenticated', 'public.usage_counters', 'INSERT') or
-     has_function_privilege('anon', 'public.increment_usage_counter(text)', 'EXECUTE') then
+     has_function_privilege('anon', 'public.increment_usage_counter(text)', 'EXECUTE') or
+     has_function_privilege('authenticated', 'public.increment_usage_counter(text)', 'EXECUTE') then
     raise exception 'Public access must be denied';
   end if;
 end $$;
