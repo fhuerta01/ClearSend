@@ -21,7 +21,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'none'; script-src 'self' https://appsforoffice.microsoft.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://*.office.com https://*.office365.com https://*.outlook.com https://*.live.com https://appsforoffice.microsoft.com; font-src 'self'; frame-src https://*.office.com https://*.office365.com https://*.outlook.com https://*.live.com; object-src 'none'; base-uri 'none'; form-action 'none'"
+          "value": "default-src 'none'; script-src 'self' 'unsafe-eval' https://appsforoffice.microsoft.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://*.office.com https://*.office365.com https://*.outlook.com https://*.live.com https://appsforoffice.microsoft.com; font-src 'self'; frame-src https://*.office.com https://*.office365.com https://*.outlook.com https://*.live.com; object-src 'none'; base-uri 'none'; form-action 'none'"
         },
         {
           "key": "Permissions-Policy",

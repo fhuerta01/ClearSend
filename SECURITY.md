@@ -10,6 +10,7 @@ Report vulnerabilities privately to the maintainer contact in [CONTRIBUTING.md](
 - The analytics API accepts only a known event name. The browser cannot provide a date, count, user ID, domain or arbitrary metadata. Secrets remain server-side. The database denies public reads/writes and RPC execution.
 - Analytics is opt-in and separate from recipient processing. Infrastructure connection metadata is outside the aggregate counter's data model; see [PRIVACY.md](PRIVACY.md).
 - Security headers limit resource sources without blocking Outlook's embedded frame. Do not add `X-Frame-Options: DENY` or `SAMEORIGIN`: this app must run in an Outlook iframe. Test CSP in supported Outlook clients before a production release.
+- CSP permits `'unsafe-eval'` because the MicrosoftAjax library loaded by Office.js uses `eval` to initialize `Sys.CultureInfo`. Blocking it reproduces `cannotDeserializeInvalidJson` during Office startup. This exception allows string evaluation by all permitted scripts; CSP cannot restrict it to Microsoft alone. Script sources remain limited to this origin and Microsoft's Office CDN, and inline JavaScript remains blocked. ClearSend does not evaluate mailbox content as code. Revisit this exception when the Office SDK no longer needs it.
 
 ## Limits
 
