@@ -1,208 +1,98 @@
-# ClearSend - Email Recipient Management for Outlook
+# ClearSend — review Outlook recipients before you send
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Platform](https://img.shields.io/badge/platform-Outlook-orange.svg)
-![Privacy](https://img.shields.io/badge/privacy-first-green.svg)
+[![CI](https://github.com/fhuerta01/ClearSend/actions/workflows/ci.yml/badge.svg)](https://github.com/fhuerta01/ClearSend/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-ClearSend is a free, open-source Microsoft Outlook add-in that helps you manage email recipients with powerful automation features. **100% client-side processing** - your email addresses never leave your device. No servers, no cloud, no tracking.
+**Clean up long To, CC and BCC lists without sending your recipient data to another service.** ClearSend is a free, open-source Outlook add-in for people who regularly email teams, clients or mixed internal/external groups.
 
+Sort recipients, remove duplicates, review address formats and apply your own internal-domain rules before sending. ClearSend processes lists inside Outlook; it does not upload recipients, message content or internal domains to ClearSend hosting or analytics services.
 
-<img width="359" height="973" alt="image" src="https://github.com/user-attachments/assets/aa043ae8-3ad1-450f-82e9-c0beda0e0aaf" />
+## What it helps you do
 
+| Task | Behavior |
+| --- | --- |
+| Remove duplicates | Compare email addresses regardless of display name or letter case; retain the first occurrence in To, then CC, then BCC. Never move BCC-only recipients into visible fields. |
+| Make lists easier to review | Sort by display name/email; optionally prioritize up to three internal domains and their subdomains. |
+| Check address formats | Block processing when unrecognized formats are present. This does **not** check mailbox existence or delivery. |
+| Keep an email internal | Explicitly enable removal of addresses outside your configured domains. Review the result before sending. |
+| Control processing | Reorder steps by dragging or with the move button (Shift moves down). The format check always runs before changes. |
+| Recover or export | Undo the last panel edit while the panel is open; export CSV locally. Saved invalid-address lists are optional, bounded and deletable. |
+| Run a quick action | Use the ribbon's Quick clean to apply the same preferences. Use the panel when you need Undo. |
 
-## ✨ Features
+ClearSend is a recipient-review helper. It does not send emails, intercept Send, verify identities or replace organizational data-loss prevention policies.
 
-- **📋 Sort Recipients** - Alphabetically organize recipients by name or email
-- **🔄 Remove Duplicates** - Cross-field deduplication across To, CC, and BCC
-- **✅ Prevent Invalids Processing** - Stop processing if invalid email addresses are detected
-- **💾 Keep Invalid Addresses** - Save invalid addresses across sessions for tracking
-- **🏢 Prioritize Internal** - Move internal domain recipients to the top of the list
-- **🚫 Remove External** - Filter out external recipients for internal-only emails
-- **⚡ Quick Clean** - One-click recipient cleaning with keyboard shortcut (Ctrl+Alt+Q)
-- **↩️ Undo Support** - Revert to previous recipient lists
-- **📊 Recipient Analysis** - Real-time statistics for destinations, duplicates, and invalid addresses
-- **💾 Export to CSV** - Download recipient lists and invalid addresses for analysis
-- **⚙️ Customizable Order** - Drag-and-drop to reorder processing steps
-- **🔧 Restore Defaults** - One-click reset to default settings
+## Install
 
-## 🔒 Privacy First - Your Data Stays With You
+Use a current Outlook desktop or web client with a Microsoft 365/Exchange mailbox and a modern webview. Availability of custom add-ins depends on your account and administrator. Mobile and legacy Internet Explorer webviews are not supported.
 
-**Absolute Privacy Guarantee:**
-- ✅ **100% Client-Side Processing** - All operations run locally in Outlook (desktop or web browser)
-- ✅ **Zero Data Transmission** - Your email addresses NEVER leave your device
-- ✅ **No Servers** - No backend servers process or store your data
-- ✅ **No Cloud Storage** - Nothing is uploaded or synchronized to any cloud service
-- ✅ **Minimal Analytics** - Optional anonymous usage counter only (no personal data, no tracking)
-- ✅ **Open Source** - Verify our claims by reviewing the complete source code
+1. Download [manifest.prod.xml](https://raw.githubusercontent.com/fhuerta01/ClearSend/main/manifest.prod.xml).
+2. In Outlook, open the add-in management page and choose **My add-ins → Add a custom add-in → Add from file**, where available.
+3. Select the manifest, compose a message and open **ClearSend** from the Apps/add-ins menu or ribbon.
+4. Review **Configuration**, set internal domains if needed, then select **Process destination fields**.
 
-**Your email addresses remain exclusively in your Outlook application. Period.**
+The production manifest loads the hosted application from `https://clearsend.vercel.app`. A manifest from a development branch does not publish that branch's code: the maintainer must deploy it first. Hosted updates take effect without downloading the complete repository.
 
-## 🚀 Getting Started
+See Microsoft's [sideloading instructions](https://learn.microsoft.com/en-us/office/dev/add-ins/outlook/sideload-outlook-add-ins-for-testing) if your Outlook menus differ.
 
-### Installation Options
+## Privacy: your Outlook data stays in your environment
 
-ClearSend offers two installation methods:
+- **Recipient processing:** inside the Outlook add-in. ClearSend does not read message bodies or attachments, request mailbox tokens, or send recipient data to Vercel/Supabase.
+- **Microsoft mailbox:** Outlook manages drafts and recipients. Preferences, internal domains and optional saved invalid-address lists use Office.js RoamingSettings and can sync through your Microsoft account. This is **not device-only storage**.
+- **Local exports:** CSV downloads and clipboard copies happen only when requested. You control the resulting files and clipboard.
+- **Optional usage counts:** disabled by default. When the deployment supports it and you opt in, only fixed action names are sent to a same-origin endpoint. Supabase stores a count per action per UTC day—no addresses, names, domains, user IDs, session IDs, cookies or fingerprint hashes.
+- **Hosting:** the hosted app and Microsoft Office.js still require network requests. Providers necessarily receive technical connection metadata. ClearSend does not promise that the device makes no network requests or that provider logs contain no IP addresses.
 
-#### Option 1: Quick Install (Recommended) - Using Vercel Deployment
+Read the complete [privacy policy](PRIVACY.md), [security boundaries](SECURITY.md) and [analytics setup](ANALYTICS_README.md). Review the source or self-host for control over the deployed application.
 
-This method uses our hosted version on Vercel. Perfect for most users.
+## Develop or self-host
 
-1. Download only the **manifest.prod.xml** file from the [Releases page](https://github.com/fhuerta01/ClearSend/releases)
-2. Open Outlook (Desktop or Web)
-3. Go to **Get Add-ins** → **My Add-ins** → **Add from File**
-4. Select the downloaded `manifest.prod.xml` file
-5. Click **Install**
+Use Node.js **22.22.2+ or 24 LTS** and npm. `.nvmrc` selects 24.
 
-**Benefits:**
-- Smallest download (just the manifest file)
-- Always up-to-date with latest version
-- No local server required
-- Faster installation
-
-#### Option 2: Local Installation - Self-Hosted
-
-This method runs ClearSend entirely from your local machine. Ideal for offline use or corporate environments.
-
-**Prerequisites:**
-- Node.js 14+ and npm
-- Microsoft Outlook (Desktop or Web)
-
-**Steps:**
-
-1. Download the complete source code from the [Releases page](https://github.com/fhuerta01/ClearSend/releases) or clone the repository:
-   ```bash
-   git clone https://github.com/fhuerta01/ClearSend.git
-   cd ClearSend
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Build the project:
-   ```bash
-   npm run build
-   ```
-
-4. Start the local server:
-   ```bash
-   npm start
-   ```
-
-5. In Outlook:
-   - Go to **Get Add-ins** → **My Add-ins** → **Add from File**
-   - Select the `manifest.xml` file (not manifest.prod.xml)
-   - Click **Install**
-
-
-### Quick Start
-
-1. Compose a new email in Outlook
-2. Click the **ClearSend** button in the ribbon (or use Ctrl+Alt+C)
-3. Configure your preferences in the Configuration tab
-4. Click **Process destination fields** to clean your recipients
-
-## 🏗️ Architecture
-
-### Client-Side Processing - Privacy by Design
-
-All email processing logic runs **entirely in your browser/Outlook client** using the `processors.js` library. No data ever leaves your device:
-
-- **Sort Module** - Alphabetical and domain-based sorting (local only)
-- **Dedupe Module** - Cross-field duplicate detection (local only)
-- **Validation Module** - Email format validation (local only)
-- **Internal Prioritization** - Internal domain identification (local only)
-- **External Filtering** - External recipient removal (local only)
-- **Invalid Tracking** - Saved invalid addresses storage (local roaming settings only)
-
-**Technical Implementation:**
-- Pure JavaScript functions execute in your browser's memory
-- No network requests to external APIs for email processing
-- No data serialization or transmission
-- Email addresses remain in Outlook's context only
-- Settings stored in Office.js roaming settings (synced by Microsoft across your devices)
-
-## 📊 Analytics
-
-**To help improve ClearSend**, we use **Vercel Analytics** - a privacy-friendly page view tracker for the hosted version only.
-
-### What This Means
-
-✅ **What IS collected** (Vercel-hosted version only):
-- Anonymous page views when you load the add-in
-- No cookies, no tracking, no personal data
-
-❌ **What is NEVER collected**:
-- No user identification (names, emails, IDs)
-- No email addresses or recipient data
-- No cookies or persistent tracking
-- No personal information of any kind
-
-### Local Installations = Zero Tracking
-
-- **Vercel-hosted** (manifest.prod.xml) → Anonymous page views tracked
-- **Self-hosted/local** (manifest.xml) → No tracking at all
-
-This gives privacy-conscious users a clear choice: clone the repo and self-host for zero tracking, or use the convenient Vercel version with minimal anonymous analytics.
-
-**All tracking is GDPR/CCPA compliant** and uses Vercel's privacy-friendly analytics (no cookies on free tier).
-
-For complete privacy details, see: `PRIVACY.md`
-
-
-## 📋 Project Structure
-
-```
-ClearSend/
-├── src/
-│   ├── taskpane/
-│   │   ├── taskpane.html          # Main UI
-│   │   ├── taskpane.js            # UI logic and Office.js integration (includes Vercel Analytics)
-│   │   ├── processors.js          # Client-side processing library
-│   │   └── clearsend.css          # Fluent UI styles
-│   └── commands/
-│       ├── commands.html          # Command function UI
-│       └── commands.js            # Quick Clean ribbon action
-├── assets/                        # Icons and images
-├── manifest.xml                   # Development manifest (localhost)
-├── manifest.prod.xml              # Production manifest (Vercel)
-├── webpack.config.js              # Build configuration
-├── vercel.json                    # Vercel deployment config
-├── package.json                   # Dependencies
-├── ANALYTICS_README.md            # Analytics documentation (for reference)
-├── ANALYTICS_IMPLEMENTATION.md    # Analytics implementation details (for reference)
-├── INTEGRATION_EXAMPLE.md         # Code examples (for reference)
-└── PRIVACY.md                     # Privacy policy
+```sh
+git clone https://github.com/fhuerta01/ClearSend.git
+cd ClearSend
+npm ci
+npm run check
+npm run dev-server
 ```
 
+The development server uses `https://localhost:3000`. Follow the Office development certificate prompt, then sideload **manifest.xml** for local testing. `npm start` is an optional Office debugging helper; platform/account support varies. Local development never emits ClearSend analytics.
 
-## 📝 License
+For your own HTTPS host, build with `npm run build`, serve `dist/`, and replace the production host in `webpack.config.js`, both manifests and any analytics origin configuration. The build copies the CSS, icons and manifests and inserts each script once. The Office.js library is loaded from Microsoft; self-hosting is not a guarantee of offline operation.
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+### Commands
 
-### Disclaimer
+| Command | Purpose |
+| --- | --- |
+| `npm run check` | Lint, regression tests, production build and both manifest validations. |
+| `npm test` | Processing, Office failure recovery, privacy contract and UI regression tests. |
+| `npm audit` | Check dependencies, including development tooling. |
+| `npm run dev-server` | Local HTTPS development server. |
+| `npm run build` | Static production bundle; Vercel serves `api/events.js` separately. |
 
-**THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.**
+With focus inside the panel: **Ctrl+Alt+Q** processes configured steps, **Ctrl+Alt+S** sorts, **Ctrl+Alt+D** deduplicates and **Ctrl+Alt+V** checks formats without changing recipients. These shortcuts do not open the panel globally.
 
-By using ClearSend, you acknowledge that:
-- You use this software at your own risk
-- The authors and contributors are not responsible for any data loss, email delivery issues, or other problems that may arise from using this software
-- This is free, open-source software provided with no guarantees or warranties
-- You are responsible for testing and verifying the software meets your needs before relying on it for critical operations
+## Behavior and limits
 
+- At most **100 recipients per changed field**, checked before writes, for portability across Outlook clients. Unchanged fields are not rewritten.
+- If a field update fails, ClearSend attempts to restore all attempted fields. Outlook offers no transaction across To/CC/BCC; a failed recovery is shown prominently. Always review recipients before sending.
+- Changes made in Outlook after a snapshot cause processing/Undo to stop instead of knowingly overwriting that snapshot. Edits during Office's asynchronous writes remain a host limitation.
+- Address checks intentionally support common SMTP formats. Exchange aliases, distribution lists, internationalized or quoted addresses may need resolving in Outlook or disabling the format check. No DNS or delivery queries are made.
+- Saved invalid addresses are limited to 100 entries and a 12 KB JSON budget. Turning off saving stops additions; **Delete saved invalid addresses** or **Restore** deletes the existing list from the add-in's Microsoft settings.
+- Undo covers the last successful panel modification only, and is lost when the panel closes. Ribbon Quick clean has no persistent undo history.
 
-## 📧 Support
+## Usage measurement
 
-- **Issues**: [GitHub Issues](https://github.com/fhuerta01/ClearSend/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/fhuerta01/ClearSend/discussions)
-- **Email**: clear_send@outlook.com
-- **Privacy Policy**: [PRIVACY.md](PRIVACY.md)
+GitHub's Traffic page measures repository visits and clones, **not add-in users or clicks**. The optional aggregate counter distinguishes process activations, successful processing, blocked operations and errors. No user identity is available, so it cannot report unique users or individual conversion journeys. Counts can be reduced by opt-outs, blockers and failed delivery, or inflated by automated requests; they are product usage estimates, not billing records.
 
-## ✨ Contribute
+See [ANALYTICS_README.md](ANALYTICS_README.md) for the exact event vocabulary, SQL queries and deployment requirements. Vercel Web Analytics is not loaded by this implementation.
 
-- **Buy me a coffee**: [paypal.me/fhuerta01](https://paypal.me/fhuerta01)
+## Architecture and contributing
 
----
+- `src/taskpane/processors.js`: pure recipient processing shared by panel and ribbon.
+- `src/shared/recipients.js`: Office reads, bounded writes, conflict checks and rollback.
+- `src/shared/settings.js`: normalized Microsoft roaming preferences.
+- `src/shared/analytics.js` → `api/events.js` → Supabase RPC: optional aggregate-only usage counts.
+- `tests/`: mocked Outlook/UI regressions and PostgreSQL permissions/counter checks.
 
-Made with ❤️ for privacy-conscious distribution lists owners
+[Contributions](CONTRIBUTING.md), reproducible bug reports and documentation improvements are welcome. Use synthetic addresses in issues and screenshots. [MIT license](LICENSE).

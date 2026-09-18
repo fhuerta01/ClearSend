@@ -9,7 +9,7 @@
   <Id>8af20496-0c8d-4599-9fa3-3d8f68f723a8</Id>
 
   <!-- Version number in the format major.minor.build.revision -->
-  <Version>1.1.0.0</Version>
+  <Version>1.2.0.0</Version>
 
   <!-- Provider/Publisher name -->
   <ProviderName>ClearSend</ProviderName>
@@ -21,14 +21,14 @@
   <DisplayName DefaultValue="ClearSend"/>
 
   <!-- Description shown in Office Store and add-in dialog -->
-  <Description DefaultValue="Automatically clean, validate, deduplicate, and organize your email recipients. Sort alphabetically, prioritize internal contacts, remove invalid addresses, and prevent accidental external emails."/>
+  <Description DefaultValue="Review Outlook recipients before sending: sort, deduplicate, check address formats and filter internal domains. Processing stays inside Outlook."/>
 
   <!-- Icons for the add-in (local development) -->
   <IconUrl DefaultValue="https://localhost:3000/assets/icon-64.png"/>
   <HighResolutionIconUrl DefaultValue="https://localhost:3000/assets/icon-128.png"/>
 
   <!-- Support URL for help and documentation -->
-  <SupportUrl DefaultValue="https://github.com/clearsend/support"/>
+  <SupportUrl DefaultValue="https://github.com/fhuerta01/ClearSend/issues"/>
 
   <!-- Domains that the add-in will navigate to -->
   <AppDomains>
@@ -50,10 +50,10 @@
 
   <!-- Form settings for different contexts -->
   <FormSettings>
-    <Form xsi:type="ItemRead">
+    <Form xsi:type="ItemEdit">
       <DesktopSettings>
         <SourceLocation DefaultValue="https://localhost:3000/taskpane.html"/>
-        <RequestedHeight>250</RequestedHeight>
+
       </DesktopSettings>
     </Form>
   </FormSettings>
@@ -61,9 +61,8 @@
   <!-- Permissions: ReadWriteItem allows reading and modifying email recipients -->
   <Permissions>ReadWriteItem</Permissions>
 
-  <!-- Activation rules: Show in both read and compose modes -->
+  <!-- Activation rules: Show only while composing messages -->
   <Rule xsi:type="RuleCollection" Mode="Or">
-    <Rule xsi:type="ItemIs" ItemType="Message" FormType="Read"/>
     <Rule xsi:type="ItemIs" ItemType="Message" FormType="Edit"/>
   </Rule>
 
@@ -83,32 +82,6 @@
         <DesktopFormFactor>
           <!-- Commands.html contains the function file for ribbon buttons -->
           <FunctionFile resid="Commands.Url"/>
-
-          <!-- Extension point for reading messages -->
-          <ExtensionPoint xsi:type="MessageReadCommandSurface">
-            <OfficeTab id="TabDefault">
-              <Group id="msgReadGroup">
-                <Label resid="GroupLabel"/>
-
-                <!-- Button to open task pane when reading messages -->
-                <Control xsi:type="Button" id="msgReadOpenPaneButton">
-                  <Label resid="TaskpaneButton.Label"/>
-                  <Supertip>
-                    <Title resid="TaskpaneButton.Label"/>
-                    <Description resid="TaskpaneButton.Tooltip"/>
-                  </Supertip>
-                  <Icon>
-                    <bt:Image size="16" resid="Icon.16x16"/>
-                    <bt:Image size="32" resid="Icon.32x32"/>
-                    <bt:Image size="80" resid="Icon.80x80"/>
-                  </Icon>
-                  <Action xsi:type="ShowTaskpane">
-                    <SourceLocation resid="Taskpane.Url"/>
-                  </Action>
-                </Control>
-              </Group>
-            </OfficeTab>
-          </ExtensionPoint>
 
           <!-- Extension point for composing messages -->
           <ExtensionPoint xsi:type="MessageComposeCommandSurface">
@@ -182,8 +155,8 @@
       <!-- Long strings (max 250 characters) -->
       <bt:LongStrings>
         <bt:String id="TaskpaneButton.Tooltip" DefaultValue="Open ClearSend panel to view and analyze email recipients"/>
-        <bt:String id="CleanSortButton.Tooltip" DefaultValue="Open ClearSend to clean, validate, deduplicate and organize recipients (Ctrl+Alt+C)"/>
-        <bt:String id="QuickCleanButton.Tooltip" DefaultValue="One-click clean: validate emails, remove duplicates, and sort alphabetically (Ctrl+Alt+Q)"/>
+        <bt:String id="CleanSortButton.Tooltip" DefaultValue="Open ClearSend to clean, validate, deduplicate and organize recipients"/>
+        <bt:String id="QuickCleanButton.Tooltip" DefaultValue="Apply configured steps to recipients. Review the fields before sending; use the panel for Undo."/>
       </bt:LongStrings>
     </Resources>
   </VersionOverrides>

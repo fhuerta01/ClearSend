@@ -2,7 +2,7 @@
  * ClearSend Client-Side Processing Library
  *
  * PRIVACY GUARANTEE: All email recipient processing logic runs 100% locally.
- * - Your email addresses NEVER leave your device
+ * - ClearSend does not send recipients to its hosting or analytics services
  * - All operations execute in your browser's memory
  * - No network calls transmit any email data
  * - No external servers process your recipient lists
@@ -10,8 +10,6 @@
  * This file contains pure JavaScript functions that process email recipients
  * entirely within your Outlook application (desktop or web browser).
  */
-
-/* global window */
 
 // ============================================================================
 // UTILITY FUNCTIONS
@@ -21,7 +19,7 @@ function extractEmail(recipient) {
   if (!recipient || typeof recipient !== "string") {
     return "";
   }
-  const match = recipient.match(/<(.+)>$/);
+  const match = recipient.trim().match(/<([^<>]*)>$/);
   return match ? match[1].trim() : recipient.trim();
 }
 
@@ -273,9 +271,7 @@ function validateEmailFormat(email) {
     return { isValid: false, message: "Invalid dot placement near @ symbol" };
   }
 
-  if (email.startsWith("-") || email.endsWith("-")) {
-    return { isValid: false, message: "Email starts or ends with hyphen" };
-  }
+  if (email.length > 254) return { isValid: false, message: "Email address is too long" };
 
   const domainParts = domainPart.split(".");
   const tld = domainParts[domainParts.length - 1];
@@ -334,11 +330,8 @@ function checkForTypos(email) {
 
   const lowerDomain = domain.toLowerCase();
 
-  if (COMMON_TYPOS[lowerDomain]) {
-    const correctedEmail = email.replace(
-      new RegExp(domain.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"),
-      COMMON_TYPOS[lowerDomain]
-    );
+  if (Object.prototype.hasOwnProperty.call(COMMON_TYPOS, lowerDomain)) {
+    const correctedEmail = email.slice(0, email.lastIndexOf("@") + 1) + COMMON_TYPOS[lowerDomain];
 
     return {
       hasTypo: true,
@@ -352,11 +345,8 @@ function checkForTypos(email) {
   for (const commonDomain of commonDomains) {
     if (Math.abs(lowerDomain.length - commonDomain.length) <= 2) {
       const similarity = calculateSimilarity(lowerDomain, commonDomain);
-      if (similarity > 0.8) {
-        const correctedEmail = email.replace(
-          new RegExp(domain.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"),
-          commonDomain
-        );
+      if (lowerDomain !== commonDomain && similarity > 0.8) {
+        const correctedEmail = email.slice(0, email.lastIndexOf("@") + 1) + commonDomain;
 
         return {
           hasTypo: true,
@@ -560,7 +550,7 @@ function prioritizeInternalStep(state) {
   };
 
   const internalDomains = state.internalDomains || [];
-  const sortAlphabetically = state.enabledSteps?.includes("sort") || false;
+  const sortAlphabetically = false; // Keep the previous step's order within each domain.
 
   const prioritizedTo = prioritizeInternal([...state.to], internalDomains, sortAlphabetically);
   const prioritizedCc = prioritizeInternal([...state.cc], internalDomains, sortAlphabetically);
@@ -677,192 +667,74 @@ function removeExternalStep(state) {
 // FLAG EXTERNAL FUNCTIONS
 // ============================================================================
 
-function isExternalEmail(email, orgDomain) {
-  if (!email || !orgDomain) {
-    return false;
-  }
-
-  const emailDomain = email.split("@")[1];
-  if (!emailDomain) {
-    return true;
-  }
-
-  const normalizedEmailDomain = emailDomain.toLowerCase();
-  const normalizedOrgDomain = orgDomain.toLowerCase();
-
-  if (normalizedEmailDomain === normalizedOrgDomain) {
-    return false;
-  }
-
-  if (normalizedEmailDomain.endsWith("." + normalizedOrgDomain)) {
-    return false;
-  }
-
-  return true;
-}
-
-function categorizeRecipients(recipients, orgDomain) {
-  const internal = [];
-  const external = [];
-
-  recipients.forEach((recipient) => {
-    const email = extractEmail(recipient);
-    if (isExternalEmail(email, orgDomain)) {
-      external.push({
-        recipient,
-        email,
-        domain: email.split("@")[1] || "unknown",
-        isExternal: true,
-      });
-    } else {
-      internal.push({
-        recipient,
-        email,
-        domain: email.split("@")[1] || "unknown",
-        isExternal: false,
-      });
-    }
-  });
-
-  return { internal, external };
-}
-
-function flagExternalStep(state) {
-  const { orgDomain } = state;
-
-  if (!orgDomain) {
-    const action = {
-      type: "flagExt",
-      input: {
-        to: [...state.to],
-        cc: [...state.cc],
-        bcc: [...state.bcc],
-      },
-      output: {
-        to: state.to,
-        cc: state.cc,
-        bcc: state.bcc,
-      },
-      flagged: [],
-      processed: 0,
-      skipped: true,
-      message: "No organization domain provided",
-    };
-
-    return {
-      ...state,
-      actions: [...state.actions, action],
-    };
-  }
-
-  const input = {
-    to: [...state.to],
-    cc: [...state.cc],
-    bcc: [...state.bcc],
-  };
-
-  const toCategorized = categorizeRecipients(state.to, orgDomain);
-  const ccCategorized = categorizeRecipients(state.cc, orgDomain);
-  const bccCategorized = categorizeRecipients(state.bcc, orgDomain);
-
-  const allExternal = [
-    ...toCategorized.external.map((r) => ({ ...r, field: "to" })),
-    ...ccCategorized.external.map((r) => ({ ...r, field: "cc" })),
-    ...bccCategorized.external.map((r) => ({ ...r, field: "bcc" })),
-  ];
-
-  const externalDomains = allExternal.reduce((acc, recipient) => {
-    const domain = recipient.domain;
-    if (!acc[domain]) {
-      acc[domain] = [];
-    }
-    acc[domain].push(recipient);
-    return acc;
-  }, {});
-
-  const action = {
-    type: "flagExt",
-    input: input,
-    output: {
-      to: state.to,
-      cc: state.cc,
-      bcc: state.bcc,
-    },
-    flagged: allExternal.map((r) => r.recipient),
-    externalByDomain: externalDomains,
-    summary: {
-      totalRecipients: state.to.length + state.cc.length + state.bcc.length,
-      externalCount: allExternal.length,
-      internalCount: state.to.length + state.cc.length + state.bcc.length - allExternal.length,
-      uniqueExternalDomains: Object.keys(externalDomains).length,
-    },
-    orgDomain: orgDomain,
-    processed: state.to.length + state.cc.length + state.bcc.length,
-  };
-
-  return {
-    ...state,
-    actions: [...state.actions, action],
-  };
-}
-
 // ============================================================================
 // MAIN ORCHESTRATOR
 // ============================================================================
 
 function processRecipients(payload) {
+  const { normalizeSettings, orderedSteps } = require("../shared/settings");
+  const fields = ["to", "cc", "bcc"];
+  if (
+    !payload ||
+    !fields.every(
+      (field) =>
+        Array.isArray(payload[field]) && payload[field].every((value) => typeof value === "string")
+    )
+  ) {
+    throw new Error("Recipient fields must contain strings.");
+  }
+  const settings = normalizeSettings(payload.userSettings);
+  const steps = orderedSteps(settings);
   const stepMap = {
     sort: sortStep,
     dedupe: dedupeStep,
     validate: validateStep,
     prioritizeInternal: prioritizeInternalStep,
     removeExternal: removeExternalStep,
-    flagExt: flagExternalStep,
   };
-
   let state = {
-    to: payload.to || [],
-    cc: payload.cc || [],
-    bcc: payload.bcc || [],
-    enabledSteps: payload.userSettings?.enabledSteps || [],
-    internalDomains: payload.userSettings?.internalDomains || [],
-    orgDomain: payload.userSettings?.orgDomain || "",
+    to: [...payload.to],
+    cc: [...payload.cc],
+    bcc: [...payload.bcc],
+    enabledSteps: steps,
+    internalDomains: settings.internalDomains,
     actions: [],
   };
-
-  for (const stepName of state.enabledSteps) {
-    const stepFn = stepMap[stepName];
-    if (stepFn) {
-      try {
-        state = stepFn(state);
-      } catch (error) {
-        throw new Error(`Step '${stepName}' failed: ${error.message}`);
-      }
-    }
+  // Validation is a precondition, regardless of the user's step order.
+  const invalid = fields
+    .flatMap((field) => state[field])
+    .filter((recipient) => !validateEmailFormat(extractEmail(recipient)).isValid);
+  if (steps.includes("validate") && invalid.length) {
+    return {
+      success: false,
+      blocked: true,
+      result: { to: state.to, cc: state.cc, bcc: state.bcc },
+      actions: [],
+      invalid,
+      summary: { stepsExecuted: 0 },
+    };
   }
-
+  for (const step of steps) state = stepMap[step](state);
   return {
     success: true,
-    result: {
-      to: state.to,
-      cc: state.cc,
-      bcc: state.bcc,
-    },
+    result: { to: state.to, cc: state.cc, bcc: state.bcc },
     actions: state.actions,
+    invalid,
     summary: {
-      totalProcessed:
-        (payload.to?.length || 0) + (payload.cc?.length || 0) + (payload.bcc?.length || 0),
-      totalRemaining: state.to.length + state.cc.length + state.bcc.length,
+      totalProcessed: fields.reduce((sum, field) => sum + payload[field].length, 0),
+      totalRemaining: fields.reduce((sum, field) => sum + state[field].length, 0),
       stepsExecuted: state.actions.length,
     },
   };
 }
 
-// Export for use in taskpane.js
-if (typeof window !== "undefined") {
-  window.ClearSendProcessors = {
-    processRecipients,
-    extractEmail,
-    extractDisplayName,
-  };
-}
+// Imported by both entry points; no mutable global or separate script tag.
+module.exports = {
+  processRecipients,
+  extractEmail,
+  extractDisplayName,
+  validateEmailFormat,
+  validateRecipient,
+  getDomainIndex,
+  checkForTypos,
+};

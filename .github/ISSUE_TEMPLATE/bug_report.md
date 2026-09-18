@@ -6,6 +6,8 @@ labels: bug
 assignees: ''
 ---
 
+Use synthetic addresses. Redact recipients, domains, account details and credentials from screenshots and logs.
+
 ## Describe the Bug
 A clear and concise description of what the bug is.
 

@@ -45,12 +45,13 @@
 - [ ] I have made corresponding changes to the documentation
 - [ ] My changes generate no new warnings or errors
 - [ ] I have removed all console.log statements
-- [ ] I have tested my changes in both Outlook Desktop and Web
+- [ ] I have listed which Outlook clients were tested and which remain unverified
+- [ ] `npm run check` and `npm audit` pass
 - [ ] **CRITICAL: Privacy verification**
   - [ ] All email processing remains 100% client-side
   - [ ] No network calls transmit email addresses or recipient data
   - [ ] No external APIs process user email data
-  - [ ] Email addresses never leave the user's device/browser
+  - [ ] No Outlook data is sent to ClearSend hosting/analytics; Microsoft roaming behavior is accurately disclosed
 
 ## Additional Notes
 <!-- Any additional information that reviewers should know -->

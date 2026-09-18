@@ -78,3 +78,9 @@ test-*.js
 test-*.html
 *-new.css
 
+
+# Local code navigation
+.serena/
+.gitnexus/
+.env.*
+!.env.example

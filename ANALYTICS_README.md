@@ -1,322 +1,85 @@
-# ClearSend Analytics - Quick Start Guide
+# Aggregate usage counting
 
-## 🎯 Goal
+This is the implementation's single setup guide. ClearSend uses a Vercel function plus Supabase **aggregate counters**, not Vercel Web Analytics. It is disabled by default; no Supabase project or production deployment is created by building the repository.
 
-Add **minimal, privacy-safe usage tracking** to understand how many people use ClearSend, without collecting any personal data.
+## What each metric means
 
-## 📊 What You'll Track
+| Event | Meaning |
+| --- | --- |
+| `pane_open` | One successful panel initialization, if the user had already opted in. |
+| `process_click` | A panel processing activation accepted while idle, including the documented keyboard shortcuts. |
+| `process_success` | Processing completed successfully, including a no-op when no changes were needed. |
+| `process_blocked` | No enabled processing steps, or the address-format precondition stopped processing. |
+| `process_error` | Processing or a required Office/settings operation failed; no error text is sent. |
+| `quick_clean_click/success/blocked/error` | The equivalent events for the ribbon command. |
+| `undo_click` | Undo requested while available and idle, whether or not it succeeds. |
+| `export_click`, `export_invalid_click` | CSV export requested, not proof of a saved file. |
+| `remove_click`, `copy_click` | Recipient removal or clipboard copy requested. No recipient properties. |
+| `refresh_click`, `settings_click` | Manual refresh or Configuration opened. |
 
-Just one number: **"How many times has the add-in been loaded?"**
+Do not add outcome counters together as extra clicks. `process_click + quick_clean_click` is the total of process activations received. These are activations, not unique users or literal mouse-only clicks. A blocked in-flight double click is ignored. No events come from polling, rendering or opening recipient lists.
 
-That's it. No names, emails, IPs, timestamps, or any identifying information.
+## Deploy with Supabase
 
----
+1. Create or choose a **dedicated ClearSend analytics Supabase project**. Run `supabase/migrations/202609180001_usage_counters.sql` once through your migration process or Supabase SQL editor as the project administrator. It creates the counter table, a restricted writer role and an RPC function. Do not run the test role-creation commands in an existing Supabase project.
+2. Inspect the table and RPC grants. `anon` and `authenticated` must have neither table access nor RPC execution. Only the server-side `service_role` key calls `increment_usage_counter`. Never expose that key in a browser variable or a `VITE_`/`NEXT_PUBLIC_` variable.
+3. In the Vercel project's **Production** environment, set:
 
-## 🚀 Quick Decision Tree
-
-**Choose your approach:**
-
-```
-Do you want analytics?
-│
-├─ No → Do nothing. Your add-in is 100% private already.
-│
-└─ Yes → Which level of effort?
-    │
-    ├─ Zero effort → Option 1: Vercel Web Analytics (just enable in dashboard)
-    │
-    ├─ Minimal effort → Option 2: Simple counter (resets periodically)
-    │
-    └─ Best tracking → Option 3: Persistent counter (accurate counts)
-```
-
----
-
-## Option 1: Vercel Web Analytics ⭐ Recommended for Beginners
-
-### What it is
-Vercel's built-in privacy-friendly page view tracking.
-
-### Pros & Cons
-✅ Zero code changes
-✅ Free on hobby tier
-✅ GDPR compliant
-✅ Beautiful dashboard
-⚠️ Tracks page views (not usage events)
-
-### How to set up
-1. Go to [Vercel Dashboard](https://vercel.com/dashboard)
-2. Select your project
-3. Click **Analytics** → **Enable**
-4. Done!
-
-### Cost
-**Free** on hobby tier
-
-### Privacy
-- No cookies
-- No personal data
-- Compliant with GDPR/CCPA
-
----
-
-## Option 2: Simple In-Memory Counter
-
-### What it is
-A tiny serverless function that increments a number each time the add-in loads.
-
-### Pros & Cons
-✅ Super simple (no database)
-✅ Absolutely zero user data
-⚠️ Resets every 5-15 minutes (cold starts)
-⚠️ Only gives "order of magnitude" estimates
-
-### How to set up
-
-1. **Files are already created** in `api/ping.js` and `src/taskpane/analytics.js`
-
-2. **Integrate into taskpane** (see `INTEGRATION_EXAMPLE.md`):
-   ```javascript
-   // Add to top of taskpane.js
-   import { initAnalytics } from './analytics.js';
-
-   // Add to Office.onReady()
-   Office.onReady((info) => {
-     if (info.host === Office.HostType.Outlook) {
-       initAnalytics(); // ← Add this line
-       initializeTaskPane();
-     }
-   });
+   ```text
+   CLEARSEND_ANALYTICS_ORIGIN=https://clearsend.vercel.app
+   ANALYTICS_ALLOWED_ORIGIN=https://clearsend.vercel.app
+   ANALYTICS_ENABLED=true
+   SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
+   SUPABASE_SERVICE_ROLE_KEY=<server-only service_role JWT>
    ```
 
-3. **Build and deploy**:
-   ```bash
-   npm run build
-   vercel --prod
-   ```
+   Use the exact HTTPS origin, with no trailing slash, query or path. A different host requires changing both origin values and the manifests/host settings. `CLEARSEND_ANALYTICS_ORIGIN` is public build configuration; the other values are read only by the server. `.env.example` is documentation, not automatically loaded by webpack.
+4. Use Vercel's Node 22 or 24 runtime, `npm run build`, output directory `dist`. Keep `api/events.js` at repository root. A static-only host does not run the counter API. Do not enable Vercel Web Analytics or a separate tracking script for this design.
+5. Review provider logging, backups, region and access policies. Keep raw request bodies out of logs. Add platform-level abuse controls for `/api/events`; a strict Origin check is useful for browsers, **not authentication against scripts**. Account for any provider metadata processing in your published policy.
+6. Deploy the reviewed branch, then verify with synthetic addresses in Outlook. This repository change alone does not enable production collection.
+7. Opt in under Configuration. Check the network request is exactly `POST /api/events` with `{"event":"process_click"}` and has no Cookie or Referer header. Successful writes return 204; storage failure returns 503. Confirm the database counter increment. A disabled endpoint also returns 204 without incrementing, so check the table as well.
 
-4. **Done!** The add-in will now send a ping each time it loads.
+The client requires an exact matching production origin, explicit user opt-in, and no DNT/GPC. Development builds and Vercel previews disable the public origin. The server separately rejects writes from preview deployments. No public secret is used as a pretend authentication mechanism.
 
-### Cost
-**Free** (no dependencies or services)
+## Query the counts
 
-### Privacy
-- Zero personal data
-- No IP logging
-- Just a simple counter
+Run queries in the Supabase SQL editor as an administrator; no public dashboard endpoint is provided.
 
----
+```sql
+-- Received process activations per UTC day; panel and ribbon combined.
+select day, sum(count) as process_activations
+from public.usage_counters
+where event in ('process_click', 'quick_clean_click')
+group by day order by day;
 
-## Option 3: Persistent Counter (KV Database) ⭐ Recommended for Production
+-- Inspect outcomes separately from activations.
+select event, sum(count) as total
+from public.usage_counters
+group by event order by event;
 
-### What it is
-Same as Option 2, but uses Vercel KV (Redis) to persist the counter permanently.
-
-### Pros & Cons
-✅ Accurate counts (never resets)
-✅ Still zero user tracking
-✅ Can view count anytime
-⚠️ Requires Vercel KV setup
-⚠️ One dependency to install
-
-### How to set up
-
-1. **Install Vercel KV**:
-   ```bash
-   npm install @vercel/kv
-   ```
-
-2. **Create KV database**:
-   - Go to [Vercel Dashboard](https://vercel.com/dashboard) → Storage
-   - Click **Create Database** → Select **KV**
-   - Name it "clearsend-analytics"
-   - Select your project
-   - Click **Create**
-   - Environment variables auto-configured ✓
-
-3. **Use the persistent API**:
-   ```bash
-   # Delete the simple version
-   rm api/ping.js
-
-   # Rename persistent version
-   mv api/ping-persistent.js api/ping.js
-   ```
-
-4. **Integrate into taskpane** (same as Option 2):
-   ```javascript
-   // Add to top of taskpane.js
-   import { initAnalytics } from './analytics.js';
-
-   // Add to Office.onReady()
-   Office.onReady((info) => {
-     if (info.host === Office.HostType.Outlook) {
-       initAnalytics(); // ← Add this line
-       initializeTaskPane();
-     }
-   });
-   ```
-
-5. **Build and deploy**:
-   ```bash
-   npm run build
-   vercel --prod
-   ```
-
-6. **View your usage count**:
-   ```bash
-   vercel kv get clearsend:usage:count
-   ```
-   Or: Vercel Dashboard → Storage → Your KV → Browse Data
-
-### Cost
-**Free tier**:
-- 256 MB storage
-- 100,000 reads/month
-- 100,000 writes/month
-
-(Way more than enough for usage tracking)
-
-### Privacy
-- Zero personal data
-- No IP logging
-- Just a persistent counter
-
----
-
-## 📋 Summary Comparison
-
-| Feature | Option 1 (Vercel) | Option 2 (Simple) | Option 3 (Persistent) |
-|---------|------------------|-------------------|----------------------|
-| **Code changes** | None | Minimal (2 lines) | Minimal (2 lines) |
-| **Dependencies** | None | None | @vercel/kv |
-| **Setup time** | 30 seconds | 5 minutes | 10 minutes |
-| **Accuracy** | Page views | Approximate | Exact |
-| **Data persistence** | Permanent | Temporary | Permanent |
-| **Cost (hobby)** | Free | Free | Free |
-| **Privacy** | High | Maximum | Maximum |
-| **Recommended for** | Quick start | Minimal effort | Production use |
-
----
-
-## 🔐 Privacy Guarantee
-
-**All options collect ZERO personal data:**
-
-❌ No user names or emails
-❌ No IP addresses stored
-❌ No timestamps
-❌ No browser/device info
-❌ No location data
-❌ No cookies
-❌ No session tracking
-
-✅ Just a count: "The add-in was loaded X times"
-
----
-
-## 🧪 Testing
-
-After integration:
-
-1. **Build**:
-   ```bash
-   npm run build
-   ```
-
-2. **Test locally**:
-   ```bash
-   npm run dev-server
-   ```
-
-3. **Check DevTools**:
-   - Open browser DevTools → Network tab
-   - Load taskpane
-   - Look for `POST /api/ping`
-   - Should return `{"ok": true}`
-
-4. **Deploy**:
-   ```bash
-   vercel --prod
-   ```
-
----
-
-## ❌ Disabling Analytics
-
-### Permanently remove:
-Don't call `initAnalytics()` in your code.
-
-### Temporary disable:
-In `src/taskpane/analytics.js`:
-```javascript
-const ANALYTICS_CONFIG = {
-  ENABLED: false, // ← Change to false
-  // ...
-};
+-- Daily maintenance, including after analytics has been turned off.
+delete from public.usage_counters
+where day < (now() at time zone 'UTC')::date - 89;
 ```
 
----
+Incoming events trigger the same retention cleanup. Schedule that deletion in your database operations if you require expiry even during inactivity. Provider backups may retain historical aggregates longer, according to their configuration.
 
-## 📚 Documentation Files
+## Accuracy and anonymity boundaries
 
-- `ANALYTICS_IMPLEMENTATION.md` - Detailed implementation guide
-- `INTEGRATION_EXAMPLE.md` - Code examples
-- `PRIVACY.md` - Updated privacy policy (includes analytics disclosure)
-- `README.md` - Updated main README
+An atomic SQL upsert prevents lost increments under concurrency and survives Vercel cold starts. The store has only `day`, `event`, `count`: there is no row for a person or a single event. It contains no IP, user-agent, recipient data, identifiers, recipient hashes or precise timestamps.
 
----
+It is **not an exact count of all use**: opt-outs, blockers, offline clients and requests lost during closing reduce totals. Requests can also be automated or spoofed. No retry is performed after uncertain delivery, avoiding retry-based double counting. Success and click events are independent and may be delivered on different UTC days or one may be lost. Ratios are estimates, not per-user funnels. An in-memory server counter would reset on cold starts and is intentionally not used.
 
-## ❓ FAQ
+Network providers necessarily receive connection metadata. “Anonymous” describes the application's aggregate storage, not a guarantee that no infrastructure provider sees an IP address. See [PRIVACY.md](PRIVACY.md).
 
-### Do I need to disclose this to users?
-**Yes.** Already done - see updated `PRIVACY.md`.
+## Disable or remove
 
-### Is this GDPR compliant?
-**Yes.** No personal data = no consent needed (anonymous counting).
+- User: uncheck **Share anonymous action counts**. Defaults and Restore also turn it off.
+- Operator: set `ANALYTICS_ENABLED=false` to stop database increments; redeploy the server configuration. Clear `CLEARSEND_ANALYTICS_ORIGIN` and rebuild to stop client requests too.
+- Local/self-hosted: leave all analytics configuration empty.
 
-### Can I track specific events (like button clicks)?
-**Yes!** Use the same `sendUsagePing()` function from `analytics.js` anywhere in your code:
-```javascript
-import { sendUsagePing } from './analytics.js';
+## Verification
 
-// On button click
-document.getElementById('myButton').addEventListener('click', () => {
-  sendUsagePing(); // Fire-and-forget ping
-});
-```
+`npm test` checks the client gates, closed event vocabulary, payload exclusions and API failure behavior. CI runs `tests/database.sql` against a disposable PostgreSQL service to check permissions, incrementing, retention and rejected event names. Use the [manual release checklist](docs/RELEASE_CHECKLIST.md) for a real Outlook/Vercel deployment.
 
-### What if Vercel KV isn't free anymore?
-Switch to Option 2 (simple counter) or Option 1 (Vercel Web Analytics).
-
-### Can I see who is using the add-in?
-**No.** By design. Zero identification.
-
----
-
-## 🎉 Recommended Path
-
-**For your use case:**
-
-1. ✅ Start with **Option 1** (Vercel Web Analytics) - Enable it now in 30 seconds
-2. ✅ Add **Option 3** (Persistent Counter) for accurate counts - Takes 10 minutes
-3. ✅ Use both together - Vercel for page views, KV counter for specific events
-
-**Next steps:**
-1. Choose your option
-2. Follow the setup steps above
-3. Build and deploy
-4. Verify it works (check Network tab)
-5. Done!
-
----
-
-## 📞 Questions?
-
-- Check `ANALYTICS_IMPLEMENTATION.md` for detailed instructions
-- Check `INTEGRATION_EXAMPLE.md` for code examples
-- Open an issue on GitHub
-
----
-
-**Privacy-first analytics. Simple. Transparent. Respectful.**
+References: [Supabase functions and execution permissions](https://supabase.com/docs/guides/database/functions), [row-level security](https://supabase.com/docs/guides/database/postgres/row-level-security). Vercel Web Analytics uses visitor hashing and additional visit dimensions, which is why it is not used for this aggregate-only contract: [Vercel's description](https://vercel.com/docs/analytics/privacy-policy).

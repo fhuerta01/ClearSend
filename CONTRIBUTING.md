@@ -14,7 +14,7 @@ Thank you for your interest in contributing to ClearSend! This document provides
 
 ### Prerequisites
 
-- Node.js 14+ and npm
+- Node.js 22.22.2+ or 24 LTS and npm
 - Git
 - Microsoft Outlook (Desktop or Web)
 - Code editor (VS Code recommended)
@@ -39,7 +39,7 @@ Thank you for your interest in contributing to ClearSend! This document provides
 
 4. **Install dependencies**
    ```bash
-   npm install
+   npm ci
    ```
 
 5. **Start development server**
@@ -52,6 +52,12 @@ Thank you for your interest in contributing to ClearSend! This document provides
    npm start
    ```
 
+
+## Validation and privacy
+
+Run `npm run check` and `npm audit` before submitting. See [SECURITY.md](SECURITY.md) and the [release checklist](docs/RELEASE_CHECKLIST.md).
+
+Recipient processing must remain in Outlook. Never send recipient data, domains, account IDs, message content or error text to analytics. Microsoft roaming settings can sync preferences and optional saved invalid addresses; describe this accurately. Use synthetic addresses and redact mailbox details in issues, screenshots and logs.
 
 ## 🐛 Reporting Bugs
 

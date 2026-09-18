@@ -1,5 +1,4 @@
-/* eslint-disable no-undef */
-
+const webpack = require("webpack");
 const devCerts = require("office-addin-dev-certs");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
@@ -19,7 +18,6 @@ module.exports = async (env, options) => {
     entry: {
       polyfill: ["core-js/stable", "regenerator-runtime/runtime"],
       taskpane: ["./src/taskpane/taskpane.js", "./src/taskpane/taskpane.html"],
-      processors: "./src/taskpane/processors.js",
       commands: "./src/commands/commands.js",
     },
     output: {
@@ -40,7 +38,10 @@ module.exports = async (env, options) => {
         {
           test: /\.html$/,
           exclude: /node_modules/,
-          use: "html-loader",
+          use: {
+            loader: "html-loader",
+            options: { sources: { urlFilter: (_attribute, value) => !value.endsWith(".css") } },
+          },
         },
         {
           test: /\.(png|jpg|jpeg|gif|ico)$/,
@@ -52,13 +53,21 @@ module.exports = async (env, options) => {
       ],
     },
     plugins: [
+      new webpack.DefinePlugin({
+        __ANALYTICS_ORIGIN__: JSON.stringify(
+          !dev && (!process.env.VERCEL_ENV || process.env.VERCEL_ENV === "production")
+            ? process.env.CLEARSEND_ANALYTICS_ORIGIN || ""
+            : ""
+        ),
+      }),
       new HtmlWebpackPlugin({
         filename: "taskpane.html",
         template: "./src/taskpane/taskpane.html",
-        chunks: ["polyfill", "processors", "taskpane"],
+        chunks: ["polyfill", "taskpane"],
       }),
       new CopyWebpackPlugin({
         patterns: [
+          { from: "src/taskpane/clearsend.css", to: "clearsend.css" },
           {
             from: "assets/*",
             to: "assets/[name][ext][query]",
@@ -82,16 +91,22 @@ module.exports = async (env, options) => {
         chunks: ["polyfill", "commands"],
       }),
     ],
-    devServer: dev ? {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-      },
-      server: {
-        type: "https",
-        options: env.WEBPACK_BUILD || options.https !== undefined ? options.https : await getHttpsOptions(),
-      },
-      port: process.env.npm_package_config_dev_server_port || 3000,
-    } : {},
+    devServer: dev
+      ? {
+          host: "localhost",
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+          },
+          server: {
+            type: "https",
+            options:
+              env?.WEBPACK_BUILD || options.https !== undefined
+                ? options.https
+                : await getHttpsOptions(),
+          },
+          port: process.env.npm_package_config_dev_server_port || 3000,
+        }
+      : {},
   };
 
   return config;
