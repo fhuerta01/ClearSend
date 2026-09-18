@@ -118,7 +118,7 @@ Mockups, examples, or other relevant information.
 
 - **GitHub Discussions**: Ask questions and discuss ideas
 - **GitHub Issues**: Report bugs or request features
-- **Email**: clear_send@outlook.com
+- **Email**: alphasorter@protonmail.com
 
 ## 🙏 Code of Conduct
 
