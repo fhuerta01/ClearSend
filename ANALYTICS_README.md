@@ -41,6 +41,23 @@ Do not add outcome counters together as extra clicks. `process_click + quick_cle
 
 The client requires an exact matching production origin, explicit user opt-in, and no DNT/GPC. Development builds and Vercel previews disable the public origin. The server separately rejects writes from preview deployments. No public secret is used as a pretend authentication mechanism.
 
+### Troubleshoot a 503 response
+
+Open the invocation in Vercel Runtime Logs and find `[ClearSend analytics]`, or inspect the `X-ClearSend-Analytics` response header. These diagnostics use fixed codes without logging secrets, event names, request details or Supabase error bodies.
+
+| Code | Check |
+| --- | --- |
+| `supabase_url_missing` | Set `SUPABASE_URL` in the deployed Production environment. |
+| `supabase_url_invalid` | Use `https://PROJECT_REF.supabase.co`, not the dashboard URL, a database connection string or an API path. |
+| `supabase_key_missing` | Set the exact variable name `SUPABASE_SERVICE_ROLE_KEY` in Production. |
+| `supabase_key_invalid` | Copy the key as a single line without embedded spaces or control characters. |
+| `supabase_auth_rejected` | Check the Legacy `service_role` JWT belongs to the same project as the URL; inspect RPC execution permissions. |
+| `supabase_rpc_unavailable` | Verify the migration succeeded in that project and the public RPC is exposed through the Data API. |
+| `supabase_write_rejected` | Inspect Supabase database/API logs and the migration's function/table permissions. |
+| `supabase_timeout` / `supabase_connection_failed` | Check the project is running and reachable from Vercel. |
+
+Surrounding whitespace in the Supabase URL/key and trailing slashes on the URL are normalized. Other malformed URLs remain rejected. Redeploy after changing environment variables. A 204 response with `stored` means Supabase accepted the increment; `disabled` means no write was attempted. Do not paste credentials into logs or support messages.
+
 ## Query the counts
 
 Run queries in the Supabase SQL editor as an administrator; no public dashboard endpoint is provided.

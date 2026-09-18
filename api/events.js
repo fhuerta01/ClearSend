@@ -1,6 +1,13 @@
 // The only public API accepts one fixed event name, never Outlook data.
 const { EVENTS } = require("../src/shared/analytics-events");
 const MAX_BYTES = 80;
+function unavailable(res, code) {
+  // Only fixed diagnostic codes: never log requests, configuration or exceptions.
+  // eslint-disable-next-line no-console
+  console.warn(`[ClearSend analytics] ${code}`);
+  res.setHeader("X-ClearSend-Analytics", code);
+  return res.status(503).end();
+}
 module.exports = async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
   res.setHeader("X-Content-Type-Options", "nosniff");
@@ -35,12 +42,18 @@ module.exports = async function handler(req, res) {
   if (
     process.env.ANALYTICS_ENABLED !== "true" ||
     (process.env.VERCEL_ENV && process.env.VERCEL_ENV !== "production")
-  )
+  ) {
+    res.setHeader("X-ClearSend-Analytics", "disabled");
     return res.status(204).end();
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  }
+  const url = (process.env.SUPABASE_URL || "").trim().replace(/\/+$/, "");
+  const key = (process.env.SUPABASE_SERVICE_ROLE_KEY || "").trim();
   // Dedicated Supabase project only. No arbitrary remote endpoints or query strings.
-  if (!/^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(url || "") || !key) return res.status(503).end();
+  if (!url) return unavailable(res, "supabase_url_missing");
+  if (!/^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(url))
+    return unavailable(res, "supabase_url_invalid");
+  if (!key) return unavailable(res, "supabase_key_missing");
+  if (/[^\x21-\x7e]/.test(key)) return unavailable(res, "supabase_key_invalid");
   try {
     const result = await fetch(`${url}/rest/v1/rpc/increment_usage_counter`, {
       method: "POST",
@@ -50,8 +63,18 @@ module.exports = async function handler(req, res) {
       redirect: "error",
     });
     // No headers, IPs, user agents, referrers, error bodies or raw request logs are forwarded.
-    return res.status(result.ok ? 204 : 503).end();
-  } catch (_error) {
-    return res.status(503).end();
+    if (!result.ok) {
+      if (result.status === 401 || result.status === 403)
+        return unavailable(res, "supabase_auth_rejected");
+      if (result.status === 404) return unavailable(res, "supabase_rpc_unavailable");
+      return unavailable(res, "supabase_write_rejected");
+    }
+    res.setHeader("X-ClearSend-Analytics", "stored");
+    return res.status(204).end();
+  } catch (error) {
+    return unavailable(
+      res,
+      error?.name === "TimeoutError" ? "supabase_timeout" : "supabase_connection_failed"
+    );
   }
 };

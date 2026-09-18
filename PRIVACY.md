@@ -36,6 +36,8 @@ The hosted app downloads code and assets from Vercel and Office.js from Microsof
 
 The browser does not contact Supabase directly. Supabase receives a server-to-server counter request, not the user's connection headers. The deployment owner must review Vercel/Supabase logging, data location, access, retention and backups before enabling analytics. Aggregate database storage does **not** justify a blanket claim of total anonymity for network transport or automatic legal compliance.
 
+When counter storage fails, ClearSend writes a fixed technical error code to server logs (for example, `supabase_url_missing`) and returns that code in a response header. These application diagnostics contain no event names, Outlook data, identifiers, credentials, configuration values or upstream error bodies. The hosting provider may associate the log with its own request metadata as described above.
+
 [Vercel privacy notice](https://vercel.com/legal/privacy-policy) · [Supabase privacy policy](https://supabase.com/privacy) · [Microsoft privacy statement](https://privacy.microsoft.com/privacystatement).
 
 ## Your choices
